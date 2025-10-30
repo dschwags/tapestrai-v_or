@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>tapestrAI - Unravel your artifact's story</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <!-- API Key Manager -->
+    <script src="js/api-key-manager.js"></script>
+    
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .serif-font { font-family: 'Playfair Display', serif; }
+        
+        /* Vertical Card Styles */
+        .vertical-card {
+            position: relative;
+            border-radius: 16px;
+            padding: 1.25rem;
+            background: white;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            overflow: hidden;
+        }
+        .vertical-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: var(--brand-color);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        .vertical-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        .vertical-card:hover::before {
+            transform: scaleX(1);
+        }
+        .vertical-card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .vertical-card.disabled:hover {
+            transform: none;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        
+        .vertical-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        
+        .coming-soon-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: #fbbf24;
+            color: #92400e;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        /* Animation */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+        
+        /* Hero Section */
+        .hero-container {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.2);
+        }
+        
+        /* Info Cards */
+        .info-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border-left: 4px solid #667eea;
+        }
+        
+        /* API Setup Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 1rem;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.3);
+        }
+        
+        /* Provider Selection */
+        .provider-tab {
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px 10px 0 0;
+            cursor: pointer;
+            background: #f3f4f6;
+            color: #6b7280;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+            border-bottom: none;
+        }
+        .provider-tab.active {
+            background: white;
+            color: #111827;
+            border-color: #e5e7eb;
+            border-bottom: 2px solid white;
+            position: relative;
+            z-index: 1;
+        }
+        .provider-tab:hover:not(.active) {
+            background: #e5e7eb;
+        }
+        
+        /* Status Badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        .status-badge.configured {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .status-badge.not-configured {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        /* Landing Page Provider Tabs */
+        .landing-provider-tab {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #f3f4f6;
+            color: #6b7280;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            border: 2px solid #e5e7eb;
+        }
+        .landing-provider-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+        .landing-provider-tab:hover:not(.active) {
+            background: #e5e7eb;
+        }
+        
+        /* API Setup Minimized State */
+        #api-setup-container.minimized {
+            padding: 1rem 1.5rem;
+            border-color: #10b981;
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        #api-setup-container.minimized:hover {
+            border-color: #059669;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+            transform: translateY(-1px);
+        }
+        #api-setup-container.minimized #setup-title {
+            color: #059669;
+            font-weight: 700;
+        }
+        #api-setup-container.minimized #minimize-api-setup {
+            opacity: 0;
+        }
+        #api-setup-container.minimized:hover #minimize-api-setup {
+            opacity: 1;
+        }
+        
+        /* Hide skip option when minimized or when user has API key */
+        #api-setup-container.minimized #skip-api-option,
+        #api-setup-container.has-key #skip-api-option {
+            display: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-3 sm:p-4">
+
+    <div class="w-full max-w-7xl">
+        <!-- Hero Section -->
+        <div class="hero-container p-5 sm:p-6 mb-4 fade-in-up">
+            <div class="text-center mb-5">
+                <!-- Title and Subtitle on Same Line -->
+                <div class="flex items-baseline justify-center gap-3 mb-3">
+                    <h1 class="text-4xl sm:text-5xl font-bold text-gray-900 serif-font">
+                        tapestr<span style="color: #667eea;">AI</span>
+                    </h1>
+                    <p class="text-lg sm:text-xl text-gray-600 font-medium">
+                        Unravel your artifact's story
+                    </p>
+                </div>
+                
+                <!-- Tagline with Line Break -->
+                <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                    Unlock the stories behind your treasures. Expert AI-powered analysis revealing the history, cultural significance, and fascinating context of historic artifacts.
+                    <br>
+                    <span class="font-semibold" style="color: #667eea;">The treasure you hold leads to the legacy it holds.</span>
+                </p>
+            </div>
+
+            <!-- API Key Setup Section -->
+            <div id="api-setup-container" class="bg-white rounded-xl p-4 mb-0 border-2 border-purple-200 transition-all duration-300">
+                <div class="mb-3">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <h3 class="font-semibold text-gray-900 flex items-center gap-2 text-base">
+                            <span>🔑</span> <span id="setup-title">Quick & Easy API Setup</span>
+                        </h3>
+                        <button id="minimize-api-setup" class="text-green-600 hover:text-green-700 px-3 py-1.5 rounded-lg hover:bg-green-50 transition-all hidden flex items-center gap-1.5 font-medium text-sm" title="Minimize API Setup">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                            </svg>
+                            <span class="hidden sm:inline">Hide</span>
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-700 mb-2">
+                        <span class="font-semibold text-green-600">✓ FREE to get started</span> • 
+                        <span class="font-semibold text-green-600">✓ Takes 2 minutes</span> • 
+                        <span class="font-semibold text-green-600">✓ Works across all specializations</span>
+                    </p>
+                    
+                    <!-- Skip Option for New Users -->
+                    <div id="skip-api-option" class="bg-blue-50 border border-blue-200 rounded-lg p-2 mb-2 text-xs">
+                        <p class="text-blue-800 mb-1">👋 <strong>First time here?</strong> You can explore the interface and see how it works before setting up your API key.</p>
+                        <button id="skip-api-setup" class="text-blue-700 hover:text-blue-900 font-semibold underline">
+                            Skip for now and explore →
+                        </button>
+                    </div>
+                    
+                    <!-- Expandable Info Section -->
+                    <div class="flex items-center justify-between mb-2">
+                        <button id="toggle-api-info" class="text-xs text-purple-700 hover:text-purple-900 font-semibold flex items-center gap-1">
+                            <span id="info-arrow">▼</span> What's an API and why do I need one?
+                        </button>
+                        <a href="#" id="show-simple-guide" class="text-xs text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1">
+                            🎯 Need step-by-step help?
+                        </a>
+                    </div>
+                    
+                    <!-- Simple Step-by-Step Guide (for absolute beginners) -->
+                    <div id="simple-guide-content" class="hidden bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 mb-3 border-2 border-green-300 text-xs">
+                        <div class="flex items-start justify-between mb-3">
+                            <h4 class="font-bold text-green-900 text-sm flex items-center gap-2">
+                                🎯 Complete Beginner's Guide
+                            </h4>
+                            <button id="close-simple-guide" class="text-green-700 hover:text-green-900 font-bold">×</button>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <div class="bg-white rounded-lg p-3 border border-green-200">
+                                <p class="font-bold text-green-900 mb-2 flex items-center gap-2">
+                                    <span class="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">1</span>
+                                    Click "Google AI Studio →" link below
+                                </p>
+                                <p class="text-gray-700 ml-8">This opens Google's website where you can get a free API key. Don't worry, it's completely free to start!</p>
+                            </div>
+                            
+                            <div class="bg-white rounded-lg p-3 border border-green-200">
+                                <p class="font-bold text-green-900 mb-2 flex items-center gap-2">
+                                    <span class="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">2</span>
+                                    Sign in with your Google account
+                                </p>
+                                <p class="text-gray-700 ml-8">Use any Gmail account you have. If you don't have one, you can create a free Gmail account first.</p>
+                            </div>
+                            
+                            <div class="bg-white rounded-lg p-3 border border-green-200">
+                                <p class="font-bold text-green-900 mb-2 flex items-center gap-2">
+                                    <span class="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">3</span>
+                                    Click "Create API Key"
+                                </p>
+                                <p class="text-gray-700 ml-8">Google will generate a long string of letters and numbers. This is your personal key!</p>
+                            </div>
+                            
+                            <div class="bg-white rounded-lg p-3 border border-green-200">
+                                <p class="font-bold text-green-900 mb-2 flex items-center gap-2">
+                                    <span class="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">4</span>
+                                    Copy the key and paste it here
+                                </p>
+                                <p class="text-gray-700 ml-8">Click the copy button next to your key, then paste it in the field above. Then click "Save & Start Analyzing"!</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3 bg-blue-50 rounded p-2 border border-blue-200">
+                            <p class="text-blue-800 text-xs">
+                                <strong>✨ That's it!</strong> The whole process takes about 2 minutes. Your key stays private in your browser - we never see it.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div id="api-info-content" class="hidden bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-3 mb-3 border-2 border-blue-200 text-xs">
+                        <p class="text-gray-700 mb-2 leading-relaxed">
+                            <strong class="text-purple-700">An API</strong> connects you to powerful AI that analyzes your artifacts. Think of it as your personal expert historian!
+                        </p>
+                        <div class="grid md:grid-cols-2 gap-2 mb-2">
+                            <div class="bg-white rounded-lg p-2 border border-blue-200">
+                                <p class="font-semibold text-gray-900 mb-0.5 text-xs">🤖 Why AI?</p>
+                                <p class="text-xs text-gray-600">AI models (Google Gemini or Claude) have deep knowledge of history, art, and manufacturing that would take hours to research manually.</p>
+                            </div>
+                            <div class="bg-white rounded-lg p-2 border border-blue-200">
+                                <p class="font-semibold text-gray-900 mb-0.5 text-xs">🔒 Your Privacy</p>
+                                <p class="text-xs text-gray-600">Your API key stays in YOUR browser only. We never see it or store it on our servers.</p>
+                            </div>
+                            <div class="bg-white rounded-lg p-2 border border-blue-200">
+                                <p class="font-semibold text-gray-900 mb-0.5 text-xs">💰 You Control Costs</p>
+                                <p class="text-xs text-gray-600">Use your own account. Most users analyze dozens of items on the free tier!</p>
+                            </div>
+                            <div class="bg-white rounded-lg p-2 border border-blue-200">
+                                <p class="font-semibold text-gray-900 mb-0.5 text-xs">⚡ Instant Analysis</p>
+                                <p class="text-xs text-gray-600">Upload photo → AI analyzes → Get detailed historical report in seconds.</p>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-600 italic bg-white rounded p-1.5 border border-gray-200">
+                            💳 <strong>Cost:</strong> Google Gemini and Claude both offer generous free tiers. Monitor usage in their dashboards.
+                        </p>
+                    </div>
+                    
+                    <!-- Provider Tabs -->
+                    <div class="flex gap-2 mb-2">
+                        <button class="landing-provider-tab active" data-provider="gemini">
+                            🤖 Google Gemini (Free)
+                        </button>
+                        <button class="landing-provider-tab" data-provider="claude">
+                            🧠 Anthropic Claude
+                        </button>
+                    </div>
+                    
+                    <!-- Gemini Input -->
+                    <div id="landing-gemini-input" class="provider-input-section">
+                        <label class="block text-xs font-semibold text-gray-700 mb-1.5">
+                            Enter Your Gemini API Key:
+                        </label>
+                        <div class="mb-1.5">
+                            <input 
+                                type="password" 
+                                id="landing-gemini-key"
+                                placeholder="AIzaSy..."
+                                class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none font-mono text-sm"
+                            >
+                        </div>
+                        <div id="landing-gemini-status" class="text-xs mb-1.5 min-h-[18px]"></div>
+                        <p class="text-xs text-gray-500 mb-1.5">
+                            Get free key: <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-600 hover:underline font-semibold">Google AI Studio →</a>
+                        </p>
+                        <div class="flex gap-2">
+                            <button id="landing-save-gemini" class="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl text-sm">
+                                💾 Save & Start Analyzing
+                            </button>
+                            <button 
+                                type="button"
+                                id="landing-toggle-gemini"
+                                class="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-all"
+                                title="Show/Hide"
+                            >
+                                <svg class="eye-open w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                <svg class="eye-closed w-5 h-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                                </svg>
+                            </button>
+                            <button 
+                                type="button"
+                                id="landing-test-gemini"
+                                class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg transition-all flex items-center gap-2 whitespace-nowrap text-sm"
+                            >
+                                <span class="test-text">🔑 Test</span>
+                                <div class="test-spinner w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin hidden"></div>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Claude Input -->
+                    <div id="landing-claude-input" class="provider-input-section hidden">
+                        <label class="block text-xs font-semibold text-gray-700 mb-1.5">
+                            Enter Your Claude API Key:
+                        </label>
+                        <div class="mb-1.5">
+                            <input 
+                                type="password" 
+                                id="landing-claude-key"
+                                placeholder="sk-ant-..."
+                                class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:border-amber-500 focus:outline-none font-mono text-sm"
+                            >
+                        </div>
+                        <div id="landing-claude-status" class="text-xs mb-1.5 min-h-[18px]"></div>
+                        <p class="text-xs text-gray-500 mb-1.5">
+                            Get key: <a href="https://console.anthropic.com/" target="_blank" class="text-amber-600 hover:underline font-semibold">Anthropic Console →</a>
+                        </p>
+                        <div class="flex gap-2">
+                            <button id="landing-save-claude" class="flex-1 px-4 py-2 bg-gradient-to-r from-amber-600 to-orange-600 text-white font-semibold rounded-lg hover:from-amber-700 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl text-sm">
+                                💾 Save & Start Analyzing
+                            </button>
+                            <button 
+                                type="button"
+                                id="landing-toggle-claude"
+                                class="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-all"
+                                title="Show/Hide"
+                            >
+                                <svg class="eye-open w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                <svg class="eye-closed w-5 h-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                                </svg>
+                            </button>
+                            <button 
+                                type="button"
+                                id="landing-test-claude"
+                                class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg transition-all flex items-center gap-2 whitespace-nowrap text-sm"
+                            >
+                                <span class="test-text">🔑 Test</span>
+                                <div class="test-spinner w-4 h-4 border-2 border-gray-300 border-t-amber-600 rounded-full animate-spin hidden"></div>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Status Display -->
+                    <div id="landing-api-status" class="mt-2">
+                        <!-- Status will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Specializations Section -->
+        <div class="mb-4 mt-4 text-center fade-in-up" style="animation-delay: 0.2s;">
+            <h2 class="text-2xl font-bold text-white mb-2">Choose Your Specialization</h2>
+            <p class="text-white text-opacity-90 text-base">Select the artifact category that matches your treasure</p>
+        </div>
+
+        <!-- Vertical Grid -->
+        <div id="verticals-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 fade-in-up" style="animation-delay: 0.4s;">
+            <!-- Vertical cards will be dynamically generated here -->
+        </div>
+
+        <!-- Footer Info -->
+        <div class="mt-6 text-center text-white text-opacity-80 text-xs fade-in-up" style="animation-delay: 0.6s;">
+            <p>🎓 Educational-first platform • 🔗 Museum-quality references • 🌐 Open source & transparent</p>
+            <p class="mt-2 opacity-75">Built with love for collectors, historians, and the curious</p>
+        </div>
+    </div>
+
+    <!-- API Setup Modal -->
+    <div id="api-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="p-8">
+                <div class="flex items-start justify-between mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900 mb-2">🔑 API Key Setup</h2>
+                        <p class="text-sm text-gray-600">Configure once, use across all specializations</p>
+                    </div>
+                    <button id="close-modal" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">
+                        ×
+                    </button>
+                </div>
+
+                <!-- What is an API? Educational Section -->
+                <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-5 mb-6 border-2 border-blue-200">
+                    <h3 class="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <span class="text-2xl">💡</span> What is an API and Why Do We Use It?
+                    </h3>
+                    
+                    <div class="space-y-3 text-sm text-gray-700">
+                        <p class="leading-relaxed">
+                            <strong class="text-purple-700">An API (Application Programming Interface)</strong> is a way for different software applications to communicate with each other. Think of it as a messenger that takes your request, tells a system what you want, and returns the response back to you.
+                        </p>
+                        
+                        <div class="bg-white rounded-lg p-4 border border-blue-200">
+                            <p class="font-semibold text-gray-900 mb-2">🤖 Why We Use AI APIs:</p>
+                            <ul class="space-y-2 ml-4">
+                                <li class="flex items-start gap-2">
+                                    <span class="text-green-600 mt-0.5">✓</span>
+                                    <span><strong>Expert AI Analysis:</strong> We connect to advanced AI models (Google Gemini or Anthropic Claude) that have deep knowledge of history, art, manufacturing, and cultural context</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-green-600 mt-0.5">✓</span>
+                                    <span><strong>Your Privacy First:</strong> Your API key stays in <em>your browser only</em>. We never see it or store it on our servers</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-green-600 mt-0.5">✓</span>
+                                    <span><strong>You Control the Costs:</strong> You use your own AI provider account, so you control usage and billing directly</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-green-600 mt-0.5">✓</span>
+                                    <span><strong>Powerful Research:</strong> AI can analyze images, recognize patterns, and provide detailed historical context that would take hours of manual research</span>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <div class="bg-amber-50 rounded-lg p-4 border border-amber-300">
+                            <p class="font-semibold text-amber-900 mb-2">📚 How It Works:</p>
+                            <ol class="space-y-1.5 ml-4 list-decimal text-gray-700">
+                                <li>You upload a photo of your artifact</li>
+                                <li>tapestrAI sends the image to the AI provider (using your API key)</li>
+                                <li>The AI analyzes the artifact's visual characteristics, style, and context</li>
+                                <li>It generates a detailed report about history, significance, and references</li>
+                                <li>Results are displayed instantly in your browser</li>
+                            </ol>
+                        </div>
+                        
+                        <p class="text-xs text-gray-600 italic bg-white rounded-lg p-3 border border-gray-200">
+                            💳 <strong>Cost Note:</strong> Both Google Gemini and Anthropic Claude offer generous free tiers. Most users analyze dozens of artifacts before any charges apply. You can monitor usage in your provider's dashboard.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Provider Tabs -->
+                <div class="flex gap-2 mb-0 border-b-2 border-gray-200">
+                    <div class="provider-tab active" data-provider="gemini">
+                        <span class="text-xl mr-2">🤖</span> Google Gemini
+                    </div>
+                    <div class="provider-tab" data-provider="claude">
+                        <span class="text-xl mr-2">🧠</span> Anthropic Claude
+                    </div>
+                </div>
+
+                <!-- Gemini Setup -->
+                <div id="gemini-setup" class="provider-setup-content p-6 bg-white rounded-b-lg border-2 border-t-0 border-gray-200">
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            Gemini API Key
+                        </label>
+                        <div class="flex gap-2">
+                            <div class="flex-1 relative">
+                                <input 
+                                    type="password" 
+                                    id="gemini-key-input"
+                                    placeholder="AIzaSy..."
+                                    class="w-full px-4 py-3 pr-12 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none font-mono text-sm"
+                                >
+                                <button 
+                                    type="button"
+                                    id="toggle-gemini-visibility"
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                                    title="Show/Hide API Key"
+                                >
+                                    <svg id="gemini-eye-open" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                    <svg id="gemini-eye-closed" class="w-5 h-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <button 
+                                type="button"
+                                id="test-gemini-key"
+                                class="px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg transition-all flex items-center gap-2 whitespace-nowrap"
+                            >
+                                <span id="test-gemini-text">🔑 Test</span>
+                                <div id="test-gemini-spinner" class="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin hidden"></div>
+                            </button>
+                        </div>
+                        <div id="gemini-test-status" class="text-xs mt-2"></div>
+                        <p class="text-xs text-gray-500 mt-2">
+                            Get your free key at <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-600 hover:underline font-semibold">Google AI Studio</a>
+                        </p>
+                    </div>
+
+                    <button id="save-gemini-key" class="w-full px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all">
+                        💾 Save Gemini Key
+                    </button>
+                </div>
+
+                <!-- Claude Setup -->
+                <div id="claude-setup" class="provider-setup-content hidden p-6 bg-white rounded-b-lg border-2 border-t-0 border-gray-200">
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            Claude API Key
+                        </label>
+                        <div class="flex gap-2">
+                            <div class="flex-1 relative">
+                                <input 
+                                    type="password" 
+                                    id="claude-key-input"
+                                    placeholder="sk-ant-..."
+                                    class="w-full px-4 py-3 pr-12 border-2 border-gray-300 rounded-lg focus:border-amber-500 focus:outline-none font-mono text-sm"
+                                >
+                                <button 
+                                    type="button"
+                                    id="toggle-claude-visibility"
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                                    title="Show/Hide API Key"
+                                >
+                                    <svg id="claude-eye-open" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                    <svg id="claude-eye-closed" class="w-5 h-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <button 
+                                type="button"
+                                id="test-claude-key"
+                                class="px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg transition-all flex items-center gap-2 whitespace-nowrap"
+                            >
+                                <span id="test-claude-text">🔑 Test</span>
+                                <div id="test-claude-spinner" class="w-4 h-4 border-2 border-gray-300 border-t-amber-600 rounded-full animate-spin hidden"></div>
+                            </button>
+                        </div>
+                        <div id="claude-test-status" class="text-xs mt-2"></div>
+                        <p class="text-xs text-gray-500 mt-2">
+                            Get your key at <a href="https://console.anthropic.com/" target="_blank" class="text-amber-600 hover:underline font-semibold">Anthropic Console</a>
+                        </p>
+                    </div>
+
+                    <button id="save-claude-key" class="w-full px-6 py-3 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 transition-all">
+                        💾 Save Claude Key
+                    </button>
+                </div>
+
+                <!-- Clear Keys -->
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <button id="clear-all-keys" class="text-sm text-red-600 hover:text-red-700 font-semibold">
+                        🗑️ Clear All API Keys
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Key Management Functions
+        function updateLandingAPIStatus() {
+            const status = window.apiKeyManager.getStatus();
+            const statusDiv = document.getElementById('landing-api-status');
+            
+            if (status.hasAnyKey) {
+                const providers = [];
+                if (status.hasGemini) providers.push('Gemini');
+                if (status.hasClaude) providers.push('Claude');
+                
+                statusDiv.innerHTML = `
+                    <div class="status-badge configured">
+                        <span>✅</span>
+                        <span>Ready! Configured: ${providers.join(', ')}</span>
+                    </div>
+                `;
+            } else {
+                statusDiv.innerHTML = '';
+            }
+        }
+
+        function showAPIModal() {
+            document.getElementById('api-modal').classList.add('active');
+            
+            // Load existing keys
+            const geminiKey = window.apiKeyManager.getKey('gemini');
+            const claudeKey = window.apiKeyManager.getKey('claude');
+            
+            if (geminiKey) {
+                document.getElementById('gemini-key-input').value = geminiKey;
+            }
+            if (claudeKey) {
+                document.getElementById('claude-key-input').value = claudeKey;
+            }
+        }
+
+        function hideAPIModal() {
+            document.getElementById('api-modal').classList.remove('active');
+        }
+
+        function switchProviderTab(provider) {
+            // Update tabs
+            document.querySelectorAll('.provider-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.provider === provider);
+            });
+            
+            // Update content
+            document.getElementById('gemini-setup').classList.toggle('hidden', provider !== 'gemini');
+            document.getElementById('claude-setup').classList.toggle('hidden', provider !== 'claude');
+        }
+
+        function saveAPIKey(provider) {
+            const inputId = provider === 'gemini' ? 'gemini-key-input' : 'claude-key-input';
+            const input = document.getElementById(inputId);
+            const key = input.value.trim();
+            
+            if (!key) {
+                alert('Please enter an API key');
+                return;
+            }
+            
+            // Validate format
+            const validation = window.apiKeyManager.validateKeyFormat(provider, key);
+            if (!validation.valid) {
+                const proceed = confirm(`⚠️ ${validation.message}\n\nDo you want to save it anyway?`);
+                if (!proceed) return;
+            }
+            
+            // Save key
+            window.apiKeyManager.setKey(provider, key);
+            window.apiKeyManager.setActiveProvider(provider);
+            
+            // Update UI
+            updateAPIStatus();
+            alert(`✅ ${provider === 'gemini' ? 'Gemini' : 'Claude'} API key saved successfully!\n\nYou can now use any specialization.`);
+            hideAPIModal();
+        }
+
+        function clearAllKeys() {
+            if (confirm('Are you sure you want to clear all API keys?')) {
+                window.apiKeyManager.clearAll();
+                document.getElementById('gemini-key-input').value = '';
+                document.getElementById('claude-key-input').value = '';
+                updateAPIStatus();
+                alert('All API keys have been cleared.');
+            }
+        }
+
+        // Test API Key Functions
+        async function testAPIKey(provider) {
+            const input = document.getElementById(`${provider}-key-input`);
+            const statusDiv = document.getElementById(`${provider}-test-status`);
+            const testText = document.getElementById(`test-${provider}-text`);
+            const testSpinner = document.getElementById(`test-${provider}-spinner`);
+            const testBtn = document.getElementById(`test-${provider}-key`);
+            
+            const key = input.value.trim();
+            if (!key) {
+                statusDiv.innerHTML = '<span class="text-red-600">⚠️ Please enter an API key</span>';
+                return;
+            }
+            
+            // Show loading state
+            testText.classList.add('hidden');
+            testSpinner.classList.remove('hidden');
+            testBtn.disabled = true;
+            statusDiv.innerHTML = '<span class="text-gray-600">Testing connection...</span>';
+            
+            try {
+                let isValid = false;
+                
+                if (provider === 'gemini') {
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${key}`;
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: "test" }] }] })
+                    });
+                    isValid = response.ok;
+                    
+                    if (!isValid) {
+                        const error = await response.json();
+                        throw new Error(error?.error?.message || 'Invalid key');
+                    }
+                } else {
+                    const url = 'https://api.anthropic.com/v1/messages';
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'x-api-key': key,
+                            'anthropic-version': '2023-06-01',
+                            'content-type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            model: 'claude-3-5-sonnet-20241022',
+                            max_tokens: 10,
+                            messages: [{ role: 'user', content: 'Hi' }]
+                        })
+                    });
+                    isValid = response.ok;
+                    
+                    if (!isValid) {
+                        const error = await response.json();
+                        throw new Error(error?.error?.message || 'Invalid key');
+                    }
+                }
+                
+                // Success
+                statusDiv.innerHTML = '<span class="text-green-600 font-semibold">✅ API key is valid and working!</span>';
+            } catch (error) {
+                // Error
+                statusDiv.innerHTML = `<span class="text-red-600 font-semibold">❌ ${error.message}</span>`;
+            } finally {
+                // Reset loading state
+                testText.classList.remove('hidden');
+                testSpinner.classList.add('hidden');
+                testBtn.disabled = false;
+            }
+        }
+
+        // Load verticals configuration and render cards
+        async function loadVerticals() {
+            try {
+                const response = await fetch('config/verticals.json');
+                const data = await response.json();
+                const grid = document.getElementById('verticals-grid');
+                
+                data.verticals.forEach((vertical, index) => {
+                    const card = document.createElement('div');
+                    card.className = `vertical-card ${!vertical.enabled ? 'disabled' : ''}`;
+                    card.style.setProperty('--brand-color', vertical.brandColor);
+                    card.style.animationDelay = `${0.1 * index}s`;
+                    
+                    if (!vertical.enabled) {
+                        card.innerHTML = `
+                            <div class="coming-soon-badge">Coming Soon</div>
+                            <span class="vertical-icon">${vertical.icon}</span>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">${vertical.name}</h3>
+                            <p class="text-sm text-gray-600">${vertical.description}</p>
+                        `;
+                    } else {
+                        card.innerHTML = `
+                            <span class="vertical-icon">${vertical.icon}</span>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">${vertical.name}</h3>
+                            <p class="text-sm text-gray-600 mb-4">${vertical.description}</p>
+                            <div class="text-sm font-semibold" style="color: ${vertical.brandColor};">
+                                Launch Analysis →
+                            </div>
+                        `;
+                        card.addEventListener('click', () => {
+                            // Check if API key is configured
+                            if (!window.apiKeyManager.hasAnyKey()) {
+                                if (confirm('⚠️ No API key configured.\n\nWould you like to set one up now?')) {
+                                    showAPIModal();
+                                }
+                                return;
+                            }
+                            window.location.href = `app.html?vertical=${vertical.id}`;
+                        });
+                    }
+                    
+                    grid.appendChild(card);
+                });
+            } catch (error) {
+                console.error('Error loading verticals:', error);
+                document.getElementById('verticals-grid').innerHTML = `
+                    <div class="col-span-full text-center text-white p-8">
+                        <p class="text-xl">Unable to load specializations. Please refresh the page.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Landing Page Inline Form Functions
+        function switchLandingProvider(provider) {
+            document.querySelectorAll('.landing-provider-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.provider === provider);
+            });
+            
+            document.getElementById('landing-gemini-input').classList.toggle('hidden', provider !== 'gemini');
+            document.getElementById('landing-claude-input').classList.toggle('hidden', provider !== 'claude');
+        }
+        
+        function toggleLandingEyeball(provider) {
+            const input = document.getElementById(`landing-${provider}-key`);
+            const button = document.getElementById(`landing-toggle-${provider}`);
+            const eyeOpen = button.querySelector('.eye-open');
+            const eyeClosed = button.querySelector('.eye-closed');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                eyeOpen.classList.add('hidden');
+                eyeClosed.classList.remove('hidden');
+            } else {
+                input.type = 'password';
+                eyeOpen.classList.remove('hidden');
+                eyeClosed.classList.add('hidden');
+            }
+        }
+        
+        async function testLandingAPIKey(provider) {
+            const input = document.getElementById(`landing-${provider}-key`);
+            const statusDiv = document.getElementById(`landing-${provider}-status`);
+            const testBtn = document.getElementById(`landing-test-${provider}`);
+            const testText = testBtn.querySelector('.test-text');
+            const testSpinner = testBtn.querySelector('.test-spinner');
+            
+            const key = input.value.trim();
+            if (!key) {
+                statusDiv.innerHTML = '<span class="text-red-600">⚠️ Please enter an API key</span>';
+                return;
+            }
+            
+            // Show loading
+            testText.classList.add('hidden');
+            testSpinner.classList.remove('hidden');
+            testBtn.disabled = true;
+            statusDiv.innerHTML = '<span class="text-gray-600">Testing...</span>';
+            
+            try {
+                let isValid = false;
+                
+                if (provider === 'gemini') {
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${key}`;
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: "test" }] }] })
+                    });
+                    isValid = response.ok;
+                    if (!isValid) {
+                        const error = await response.json();
+                        throw new Error(error?.error?.message || 'Invalid key');
+                    }
+                } else {
+                    const url = 'https://api.anthropic.com/v1/messages';
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'x-api-key': key,
+                            'anthropic-version': '2023-06-01',
+                            'content-type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            model: 'claude-3-5-sonnet-20241022',
+                            max_tokens: 10,
+                            messages: [{ role: 'user', content: 'Hi' }]
+                        })
+                    });
+                    isValid = response.ok;
+                    if (!isValid) {
+                        const error = await response.json();
+                        throw new Error(error?.error?.message || 'Invalid key');
+                    }
+                }
+                
+                statusDiv.innerHTML = '<span class="text-green-600 font-semibold">✅ Valid & working!</span>';
+            } catch (error) {
+                statusDiv.innerHTML = `<span class="text-red-600 font-semibold">❌ ${error.message}</span>`;
+            } finally {
+                testText.classList.remove('hidden');
+                testSpinner.classList.add('hidden');
+                testBtn.disabled = false;
+            }
+        }
+        
+        function saveLandingAPIKey(provider) {
+            const input = document.getElementById(`landing-${provider}-key`);
+            const key = input.value.trim();
+            
+            if (!key) {
+                alert('Please enter an API key');
+                return;
+            }
+            
+            // Validate format
+            const validation = window.apiKeyManager.validateKeyFormat(provider, key);
+            if (!validation.valid) {
+                const proceed = confirm(`⚠️ ${validation.message}\n\nDo you want to save it anyway?`);
+                if (!proceed) return;
+            }
+            
+            // Save key
+            window.apiKeyManager.setKey(provider, key);
+            window.apiKeyManager.setActiveProvider(provider);
+            
+            // Update UI
+            updateLandingAPIStatus();
+            alert(`✅ ${provider === 'gemini' ? 'Gemini' : 'Claude'} API key saved!\n\nYou can now choose a specialization below.`);
+        }
+        
+        // API Setup Minimize/Expand Functionality
+        function toggleAPISetupSize() {
+            const container = document.getElementById('api-setup-container');
+            const content = container.querySelector('.mb-3');
+            const minimizeBtn = document.getElementById('minimize-api-setup');
+            const setupTitle = document.getElementById('setup-title');
+            const isMinimized = container.classList.contains('minimized');
+            
+            if (isMinimized) {
+                // Expand
+                container.classList.remove('minimized');
+                content.querySelectorAll(':scope > *:not(:first-child)').forEach(el => {
+                    el.style.display = '';
+                });
+                minimizeBtn.innerHTML = `
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    <span class="hidden sm:inline">Hide</span>
+                `;
+                minimizeBtn.title = 'Minimize API Setup';
+                setupTitle.textContent = 'Quick & Easy API Setup';
+                setupTitle.style.cursor = '';
+                localStorage.setItem('tapestrai_api_setup_minimized', 'false');
+            } else {
+                // Minimize
+                container.classList.add('minimized');
+                content.querySelectorAll(':scope > *:not(:first-child)').forEach(el => {
+                    el.style.display = 'none';
+                });
+                minimizeBtn.innerHTML = `
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    <span class="hidden sm:inline">Expand</span>
+                `;
+                minimizeBtn.title = 'Expand API Setup';
+                setupTitle.textContent = '✅ API Configured (Click to expand)';
+                setupTitle.style.cursor = 'pointer';
+                localStorage.setItem('tapestrai_api_setup_minimized', 'true');
+            }
+        }
+        
+        function initializeAPISetupState() {
+            const hasKey = window.apiKeyManager.hasAnyKey();
+            const wasMinimized = localStorage.getItem('tapestrai_api_setup_minimized') === 'true';
+            const minimizeBtn = document.getElementById('minimize-api-setup');
+            const container = document.getElementById('api-setup-container');
+            const setupTitle = document.getElementById('setup-title');
+            const skipOption = document.getElementById('skip-api-option');
+            
+            if (hasKey) {
+                // Show minimize button for users with API keys
+                minimizeBtn.classList.remove('hidden');
+                container.classList.add('has-key');
+                
+                // Auto-minimize for returning users if they previously minimized it
+                if (wasMinimized) {
+                    container.classList.add('minimized');
+                    const content = container.querySelector('.mb-3');
+                    content.querySelectorAll(':scope > *:not(:first-child)').forEach(el => {
+                        el.style.display = 'none';
+                    });
+                    minimizeBtn.innerHTML = `
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="hidden sm:inline">Expand</span>
+                    `;
+                    minimizeBtn.title = 'Expand API Setup';
+                    setupTitle.textContent = '✅ API Configured (Click to expand)';
+                    setupTitle.style.cursor = 'pointer';
+                    setupTitle.addEventListener('click', toggleAPISetupSize);
+                }
+            }
+            
+            // Add click handler to minimize button
+            minimizeBtn.addEventListener('click', toggleAPISetupSize);
+            
+            // Handle skip button
+            const skipBtn = document.getElementById('skip-api-setup');
+            if (skipBtn) {
+                skipBtn.addEventListener('click', function() {
+                    // Minimize the API setup section
+                    container.classList.add('minimized');
+                    const content = container.querySelector('.mb-3');
+                    content.querySelectorAll(':scope > *:not(:first-child)').forEach(el => {
+                        el.style.display = 'none';
+                    });
+                    setupTitle.textContent = '🔑 Setup API Key (Click when ready)';
+                    setupTitle.style.cursor = 'pointer';
+                    setupTitle.addEventListener('click', toggleAPISetupSize);
+                    
+                    // Scroll to specializations
+                    document.getElementById('verticals-grid').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    
+                    // Store skip preference
+                    localStorage.setItem('tapestrai_api_setup_skipped', 'true');
+                });
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load verticals
+            loadVerticals();
+            
+            // Update API status
+            updateLandingAPIStatus();
+            
+            // Load existing keys into landing form
+            const geminiKey = window.apiKeyManager.getKey('gemini');
+            const claudeKey = window.apiKeyManager.getKey('claude');
+            if (geminiKey) document.getElementById('landing-gemini-key').value = geminiKey;
+            if (claudeKey) document.getElementById('landing-claude-key').value = claudeKey;
+            
+            // Initialize API setup collapsible state (for returning users)
+            initializeAPISetupState();
+            
+            // Toggle API info section
+            document.getElementById('toggle-api-info').addEventListener('click', function() {
+                const content = document.getElementById('api-info-content');
+                const arrow = document.getElementById('info-arrow');
+                const simpleGuide = document.getElementById('simple-guide-content');
+                
+                // Hide simple guide if open
+                if (!simpleGuide.classList.contains('hidden')) {
+                    simpleGuide.classList.add('hidden');
+                }
+                
+                content.classList.toggle('hidden');
+                arrow.textContent = content.classList.contains('hidden') ? '▼' : '▲';
+            });
+            
+            // Show simple step-by-step guide
+            document.getElementById('show-simple-guide').addEventListener('click', function(e) {
+                e.preventDefault();
+                const simpleGuide = document.getElementById('simple-guide-content');
+                const apiInfo = document.getElementById('api-info-content');
+                const arrow = document.getElementById('info-arrow');
+                
+                // Hide API info if open
+                if (!apiInfo.classList.contains('hidden')) {
+                    apiInfo.classList.add('hidden');
+                    arrow.textContent = '▼';
+                }
+                
+                simpleGuide.classList.remove('hidden');
+                
+                // Smooth scroll to the guide
+                simpleGuide.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            });
+            
+            // Close simple guide
+            document.getElementById('close-simple-guide').addEventListener('click', function() {
+                document.getElementById('simple-guide-content').classList.add('hidden');
+            });
+            
+            // Landing page provider tabs
+            document.querySelectorAll('.landing-provider-tab').forEach(tab => {
+                tab.addEventListener('click', () => switchLandingProvider(tab.dataset.provider));
+            });
+            
+            // Landing page eyeball toggles
+            document.getElementById('landing-toggle-gemini').addEventListener('click', () => toggleLandingEyeball('gemini'));
+            document.getElementById('landing-toggle-claude').addEventListener('click', () => toggleLandingEyeball('claude'));
+            
+            // Landing page test buttons
+            document.getElementById('landing-test-gemini').addEventListener('click', () => testLandingAPIKey('gemini'));
+            document.getElementById('landing-test-claude').addEventListener('click', () => testLandingAPIKey('claude'));
+            
+            // Landing page save buttons
+            document.getElementById('landing-save-gemini').addEventListener('click', () => saveLandingAPIKey('gemini'));
+            document.getElementById('landing-save-claude').addEventListener('click', () => saveLandingAPIKey('claude'));
+            
+            // Modal functions (kept for backward compatibility)
+            document.getElementById('close-modal').addEventListener('click', hideAPIModal);
+            
+            document.querySelectorAll('.provider-tab').forEach(tab => {
+                tab.addEventListener('click', () => switchProviderTab(tab.dataset.provider));
+            });
+            
+            document.getElementById('save-gemini-key').addEventListener('click', () => saveAPIKey('gemini'));
+            document.getElementById('save-claude-key').addEventListener('click', () => saveAPIKey('claude'));
+            
+            document.getElementById('test-gemini-key').addEventListener('click', () => testAPIKey('gemini'));
+            document.getElementById('test-claude-key').addEventListener('click', () => testAPIKey('claude'));
+            
+            document.getElementById('toggle-gemini-visibility').addEventListener('click', function() {
+                const input = document.getElementById('gemini-key-input');
+                const eyeOpen = document.getElementById('gemini-eye-open');
+                const eyeClosed = document.getElementById('gemini-eye-closed');
+                
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    eyeOpen.classList.add('hidden');
+                    eyeClosed.classList.remove('hidden');
+                } else {
+                    input.type = 'password';
+                    eyeOpen.classList.remove('hidden');
+                    eyeClosed.classList.add('hidden');
+                }
+            });
+            
+            document.getElementById('toggle-claude-visibility').addEventListener('click', function() {
+                const input = document.getElementById('claude-key-input');
+                const eyeOpen = document.getElementById('claude-eye-open');
+                const eyeClosed = document.getElementById('claude-eye-closed');
+                
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    eyeOpen.classList.add('hidden');
+                    eyeClosed.classList.remove('hidden');
+                } else {
+                    input.type = 'password';
+                    eyeOpen.classList.remove('hidden');
+                    eyeClosed.classList.add('hidden');
+                }
+            });
+            
+            document.getElementById('clear-all-keys').addEventListener('click', clearAllKeys);
+            
+            document.getElementById('api-modal').addEventListener('click', function(e) {
+                if (e.target === this) hideAPIModal();
+            });
+            
+            window.addEventListener('show-api-setup', showAPIModal);
+        });
+    </script>
+</body>
+</html>

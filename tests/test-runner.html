@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>tapestrAI v3.0 - BugX Test Runner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            width: 100%;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+        
+        .test-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        
+        .test-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button.secondary {
+            background: #64748b;
+        }
+        
+        button.secondary:hover {
+            background: #475569;
+        }
+        
+        .status-bar {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .status-bar h3 {
+            margin-bottom: 15px;
+            color: #334155;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        
+        .stat {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid;
+        }
+        
+        .stat.total {
+            border-color: #667eea;
+        }
+        
+        .stat.passed {
+            border-color: #10b981;
+        }
+        
+        .stat.failed {
+            border-color: #ef4444;
+        }
+        
+        .stat.duration {
+            border-color: #f59e0b;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        
+        .console-output {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .console-output:empty::before {
+            content: 'Console output will appear here...';
+            color: #64748b;
+            font-style: italic;
+        }
+        
+        .instructions {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .instructions h3 {
+            color: #92400e;
+            margin-bottom: 10px;
+        }
+        
+        .instructions ul {
+            margin-left: 20px;
+            color: #78350f;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-left: 10px;
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 tapestrAI v3.0 Test Runner</h1>
+            <p>BugX Framework Testing Suite</p>
+        </div>
+        
+        <div class="test-card">
+            <div class="instructions">
+                <h3>📋 Instructions</h3>
+                <ul>
+                    <li><strong>Open Browser Console</strong> (F12 or Cmd+Option+I) to see detailed test results</li>
+                    <li>Tests run in the browser and verify module functionality</li>
+                    <li>Tests do NOT require actual API keys (tests internal logic only)</li>
+                    <li>For <strong>live API testing</strong>, see Task 12 requirements in README.md</li>
+                </ul>
+            </div>
+            
+            <div class="test-controls">
+                <button id="runAllBtn" onclick="runAllTests()">
+                    ▶️ Run All Tests
+                </button>
+                <button class="secondary" onclick="clearConsole()">
+                    🗑️ Clear Console
+                </button>
+                <button class="secondary" onclick="location.reload()">
+                    🔄 Reset Page
+                </button>
+            </div>
+            
+            <div class="status-bar" id="statusBar" style="display: none;">
+                <h3>Test Results</h3>
+                <div class="stats">
+                    <div class="stat total">
+                        <div class="stat-label">Total Tests</div>
+                        <div class="stat-value" id="totalTests">-</div>
+                    </div>
+                    <div class="stat passed">
+                        <div class="stat-label">Passed</div>
+                        <div class="stat-value" id="passedTests">-</div>
+                    </div>
+                    <div class="stat failed">
+                        <div class="stat-label">Failed</div>
+                        <div class="stat-value" id="failedTests">-</div>
+                    </div>
+                    <div class="stat duration">
+                        <div class="stat-label">Duration</div>
+                        <div class="stat-value" id="duration">-</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <h3 style="margin-bottom: 15px; color: #334155;">📊 Console Output</h3>
+                <div class="console-output" id="consoleOutput"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load all modules -->
+    <script src="../js/apiKeyManager.js"></script>
+    <script src="../js/imageProcessor.js"></script>
+    <script src="../js/progressUI.js"></script>
+    <script src="../js/costTracker.js"></script>
+    <script src="../js/errorHandler.js"></script>
+    <script src="../js/universalAnalyzer.js"></script>
+    <script src="../js/agentOrchestrator.js"></script>
+    
+    <!-- Load BugX framework -->
+    <script src="bugx-framework.js"></script>
+    
+    <!-- Load test suite -->
+    <script src="bugx-tapestrAI-tests.js"></script>
+    
+    <script>
+        // Capture console output
+        const consoleOutput = document.getElementById('consoleOutput');
+        const originalLog = console.log;
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            
+            // Format and display in UI
+            const message = args.map(arg => {
+                if (typeof arg === 'string') {
+                    // Remove style tags
+                    return arg.replace(/%c/g, '');
+                }
+                return JSON.stringify(arg, null, 2);
+            }).join(' ');
+            
+            const div = document.createElement('div');
+            div.textContent = message;
+            div.style.marginBottom = '5px';
+            
+            // Color code based on content
+            if (message.includes('✓') || message.includes('PASSED')) {
+                div.style.color = '#10b981';
+            } else if (message.includes('✗') || message.includes('FAILED')) {
+                div.style.color = '#ef4444';
+            } else if (message.includes('Suite:')) {
+                div.style.color = '#667eea';
+                div.style.fontWeight = 'bold';
+                div.style.marginTop = '15px';
+            }
+            
+            consoleOutput.appendChild(div);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        };
+        
+        async function runAllTests() {
+            const btn = document.getElementById('runAllBtn');
+            const statusBar = document.getElementById('statusBar');
+            
+            // Clear previous output
+            consoleOutput.innerHTML = '';
+            
+            // Disable button
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Running Tests... <span class="loading"></span>';
+            
+            // Show status bar
+            statusBar.style.display = 'block';
+            
+            // Reset stats
+            document.getElementById('totalTests').textContent = '-';
+            document.getElementById('passedTests').textContent = '-';
+            document.getElementById('failedTests').textContent = '-';
+            document.getElementById('duration').textContent = '-';
+            
+            try {
+                const startTime = Date.now();
+                
+                // Run all tests (already triggered by script load)
+                // Wait a bit for async completion
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+                
+                // Parse results from console output
+                const output = consoleOutput.textContent;
+                const passMatch = output.match(/(\d+) passed/);
+                const failMatch = output.match(/(\d+) failed/);
+                
+                if (passMatch && failMatch) {
+                    const passed = parseInt(passMatch[1]);
+                    const failed = parseInt(failMatch[1]);
+                    const total = passed + failed;
+                    
+                    document.getElementById('totalTests').textContent = total;
+                    document.getElementById('passedTests').textContent = passed;
+                    document.getElementById('failedTests').textContent = failed;
+                    document.getElementById('duration').textContent = duration + 's';
+                }
+                
+                btn.disabled = false;
+                btn.innerHTML = '✓ Tests Complete - Run Again?';
+                
+                // Show success message
+                if (failMatch && parseInt(failMatch[1]) === 0) {
+                    alert('🎉 All tests passed! Check the console for details.');
+                }
+                
+            } catch (error) {
+                console.error('Test execution error:', error);
+                btn.disabled = false;
+                btn.innerHTML = '❌ Error - Try Again';
+            }
+        }
+        
+        function clearConsole() {
+            consoleOutput.innerHTML = '';
+        }
+        
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                console.log('%c👋 Welcome to tapestrAI v3.0 Test Runner!', 'font-size: 16px; font-weight: bold; color: #667eea;');
+                console.log('%cClick "Run All Tests" button to start...', 'color: #64748b;');
+                console.log('%cOr check the test files directly in /tests/ directory', 'color: #64748b;');
+            }, 100);
+        });
+    </script>
+</body>
+</html>

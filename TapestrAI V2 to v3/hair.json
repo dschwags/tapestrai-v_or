@@ -1,0 +1,168 @@
+{
+  "id": "hair",
+  "name": "tapestrAI - Handbags & Purses",
+  "shortName": "H.A.I.R. - Purses",
+  "acronym": "H.A.I.R.",
+  "fullName": "Unravel your artifact's story",
+  "icon": "👜",
+  "brandColor": "#8b1e3f",
+  
+  "ui": {
+    "title": "tapestrAI H.A.I.R.",
+    "subtitle": "Unravel your artifact's story",
+    "description": "Expert AI analysis for historic handbags, purses, and fashion accessories",
+    "buttonText": "Identify My Artifact",
+    "photoSectionTitle": "Upload Photos",
+    "detailsSectionTitle": "Material Details (Optional)",
+    "requiredPhotoLabel": "Front (Required)",
+    "imageLabels": [
+      "Front (Required)",
+      "Back",
+      "Interior/Lining",
+      "Clasp/Hardware",
+      "Label/Maker's Mark",
+      "Damage/Wear",
+      "Detail Shot",
+      "Additional View"
+    ]
+  },
+  
+  "features": {
+    "salesDescription": true,
+    "conservationAdvice": true,
+    "followUpChat": true,
+    "pdfExport": true,
+    "htmlExport": true
+  },
+  
+  "detailsForm": [
+    {
+      "section": "Size & Weight",
+      "fields": [
+        {
+          "id": "purse-size",
+          "label": "Size / Dimensions (approx.)",
+          "type": "text",
+          "placeholder": "e.g., 7 inches wide x 5 inches tall"
+        },
+        {
+          "id": "purse-weight",
+          "label": "Weight (approx.)",
+          "type": "text",
+          "placeholder": "e.g., 1.2 lbs"
+        }
+      ]
+    },
+    {
+      "section": "Bead Details",
+      "fields": [
+        {
+          "id": "bead-type",
+          "label": "Type (check all that apply)",
+          "type": "checkbox-group",
+          "options": ["Glass (clear)", "Glass (colored)", "Cut Steel", "Plastic", "Metal", "Faux Pearl", "Real Pearl", "Shells", "Seeds", "Bone/Ivory", "Sequins", "Other"]
+        },
+        {
+          "id": "bead-metal",
+          "label": "Metal Condition (check all that apply)",
+          "type": "checkbox-group",
+          "options": ["Magnetic", "Non-Magnetic", "Some Magnetic", "Tarnished", "Rust"]
+        },
+        {
+          "id": "bead-color",
+          "label": "Colors",
+          "type": "text",
+          "placeholder": "e.g., blue, silver"
+        }
+      ]
+    },
+    {
+      "section": "Clasp/Opening",
+      "fields": [
+        {
+          "id": "clasp-type",
+          "label": "Type (check all that apply)",
+          "type": "checkbox-group",
+          "options": ["Kiss-lock", "Drawstring", "Snap", "Zipper", "Lift-latch", "Turn-lock", "Other"]
+        },
+        {
+          "id": "clasp-material",
+          "label": "Material (check all that apply)",
+          "type": "checkbox-group",
+          "options": ["Brass", "Bakelite", "Lucite", "Silver", "Gold", "Celluloid", "Other"]
+        }
+      ]
+    },
+    {
+      "section": "Thread/String",
+      "fields": [
+        {
+          "id": "thread-material",
+          "label": "Material (check all that apply)",
+          "type": "checkbox-group",
+          "options": ["Silk", "Cotton", "Linen", "Nylon", "Rayon", "Wire", "Other"]
+        }
+      ]
+    },
+    {
+      "section": "Other Notes",
+      "fields": [
+        {
+          "id": "general-notes",
+          "label": "",
+          "type": "textarea",
+          "placeholder": "Smell, lining, location found...",
+          "rows": 4
+        }
+      ]
+    }
+  ],
+  
+  "systemPrompt": "You are a museum-quality expert appraiser and historian specializing in antique and vintage purses, handbags, and fashion accessories from 1880s-1970s.\n\n**CORE EXPERTISE:**\n• Materials: mesh, beading (glass, steel, sequins), leather, textiles, celluloid, Bakelite, Lucite, tortoiseshell\n• Construction: hand-sewn, machine stitching, frame types (kiss-lock, lift-latch, turn-lock), chain/strap attachments\n• Key Eras: Victorian, Edwardian, Art Nouveau, Art Deco, Mid-Century Modern, 1960s-70s\n• Makers: Whiting & Davis, Mandalian, Elsa Schiaparelli, Hermès, Judith Leiber, plus unmarked artisan pieces\n\n**CRITICAL CONTEXTUAL KNOWLEDGE:**\n\n**Ballet Russes Era (1909-1929, Paris):**\n- Ballets Russes revolutionized fashion through Léon Bakst's exotic costume designs\n- Purses featured vibrant beadwork, Oriental motifs, Russian folk patterns, and lavish textures\n- Designed for electric lighting environments (theaters, restaurants)\n- Materials: silk, satin, velvet, Czech glass beads, faux pearls, elaborate passementerie\n- Construction: Lunéville embroidery, couching techniques, silk linings\n- Often unmarked frames from artisan workshops\n- Post-WWI shift: \"Egyptomania\" and Art Deco dominance after Tutankhamun discovery (1922)\n\n**Art Movements:**\n- Art Nouveau (1890-1910): Organic forms, flowing lines, nature motifs, whiplash curves\n- Art Deco (1920s-1930s): Geometric patterns, streamlined design, zigzags, sunbursts, Egyptian revival\n- Mid-Century Modern (1945-1965): Clean lines, abstract patterns, innovative materials\n\n**Material Evolution:**\n- 1920s-1940s: Bakelite (early thermoplastic), carved celluloid\n- 1940s-1950s: Lucite (clear acrylic), early injection-molded plastics\n- WWII Era (1939-1945): Material rationing led to wood frames, cordé, raffia, snakeskin, fabric purses\n- Zipper adoption: Common in fashion by 1930s\n- Czech glass beads: High quality, consistent size - premium indicator\n\n**Functional Evolution:**\n- Reticules (early-mid 1800s): Drawstring pouches\n- Chatelaine bags (Victorian): Attached to belt\n- Flapper bags (1920s): Small, decorative, evening focus\n- Shoulder bags (1940s+): Practical wartime necessity\n\n**IMPORTANT INSTRUCTIONS:**\n- Include your CONFIDENCE score as the FIRST section (required!)\n- **CRITICAL: Include relevant reference URLs and links throughout ALL sections, not just \"Further Research\"**\n  - In ERA & IDENTIFICATION: Link to historical period information, style guides, or museum collections\n  - In MAKER/ORIGIN: Link to manufacturer archives, company histories, or trademark databases\n  - In DESIGN & ARTISTIC CONTEXT: Link to art movement resources, historical context pages, or cultural archives\n  - In NOTABLE FEATURES: Link to similar examples in museum collections or auction archives\n  - Format ALL URLs as clickable markdown links: [Display Text](https://url.com)\n  - Prioritize authoritative sources: museum websites, auction houses (Christie's, Sotheby's), academic institutions, historical societies\n\n**RESPONSE FORMAT:**\n\nProvide a comprehensive analysis organized as follows:\n\n## CONFIDENCE: [High/Medium/Low]\n\nBriefly state your overall confidence level and why.\n\n## ERA & IDENTIFICATION\n\nProvide detailed analysis of time period, style classification, and historical context. Include relevant reference links to period guides and museum collections.\n\n## MAKER & ORIGIN\n\nIdentify maker if possible, manufacturing techniques, materials, and origin. Link to manufacturer histories or trademark databases.\n\n## DESIGN & ARTISTIC CONTEXT\n\nDiscuss aesthetic movement, cultural influences, and design elements. Provide links to art movement resources and historical context.\n\n## NOTABLE FEATURES\n\nHighlight distinguishing characteristics, craftsmanship details, and unique elements. Link to similar examples in collections.\n\n## CONDITION ASSESSMENT\n\nEvaluate current state, identify any damage, wear patterns, and restoration evidence.\n\n## COLLECTIBILITY & MARKET CONTEXT\n\nDiscuss rarity, desirability factors, and market trends (avoid specific valuations).\n\n## FURTHER RESEARCH\n\nSuggest additional resources, research avenues, and expert consultations with authoritative links.\n\n**Remember:** Focus on educational value, historical significance, and cultural context. Emphasize the era, geopolitical environment, technology, and what the artifact signifies. Include extensive reference links throughout ALL sections.",
+  
+  "referenceLinks": [
+    {
+      "category": "Museums & Collections",
+      "links": [
+        {
+          "title": "Victoria & Albert Museum - Fashion Collection",
+          "url": "https://www.vam.ac.uk/collections/fashion"
+        },
+        {
+          "title": "Metropolitan Museum of Art - Costume Institute",
+          "url": "https://www.metmuseum.org/about-the-met/curatorial-departments/the-costume-institute"
+        },
+        {
+          "title": "Museum of Bags and Purses (Amsterdam)",
+          "url": "https://www.tassenmuseum.nl/en/"
+        }
+      ]
+    },
+    {
+      "category": "Auction Houses",
+      "links": [
+        {
+          "title": "Christie's - Handbags & Accessories",
+          "url": "https://www.christies.com/en/departments/handbags-accessories-73-1"
+        },
+        {
+          "title": "Sotheby's - Fashion & Accessories",
+          "url": "https://www.sothebys.com/en/departments/fashion"
+        }
+      ]
+    },
+    {
+      "category": "Research Resources",
+      "links": [
+        {
+          "title": "Fashion History Timeline",
+          "url": "https://fashionhistory.fitnyc.edu/"
+        },
+        {
+          "title": "Vintage Fashion Guild",
+          "url": "https://vintagefashionguild.org/"
+        }
+      ]
+    }
+  ]
+}
