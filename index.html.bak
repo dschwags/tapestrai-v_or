@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>tapestrAI - Unravel your artifact's story</title>
-    <!-- Version: 3.2.0 - Unique Shapes & Better Status | Build: 2025-10-31 15:14 EDT>
+    <!-- Version: 3.2.0 - Unique Shapes & Better Status | Build: 2025-10-31 15:24 EDT>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -172,7 +172,7 @@
                             <!-- Gemini (Required) -->
                         <div class="provider-card required">
                             <div class="flex items-center gap-2 mb-2">
-                                <span class="text-2xl">◆</span>
+                                <span class="text-2xl font-bold" style="color: #4285F4; width: 24px; display: inline-block; text-align: center;">◆</span>
                                 <div class="flex-1">
                                     <div class="flex items-center gap-2 flex-wrap">
                                         <h3 class="font-bold text-base">Google Gemini</h3>
@@ -222,7 +222,7 @@
                         <!-- OpenAI (Optional) -->
                         <div class="provider-card">
                             <div class="flex items-center gap-2 mb-2">
-                                <span class="text-2xl">●</span>
+                                <span class="text-2xl font-bold" style="color: #10A37F; width: 24px; display: inline-block; text-align: center;">◇</span>
                                 <div class="flex-1">
                                     <div class="flex items-center gap-1 flex-wrap">
                                         <h3 class="font-bold text-base">OpenAI GPT-4</h3>
@@ -271,7 +271,7 @@
                         <!-- Anthropic Claude (Optional) -->
                         <div class="provider-card">
                             <div class="flex items-center gap-2 mb-2">
-                                <span class="text-2xl">▲</span>
+                                <span class="text-2xl font-bold" style="color: #D97757; width: 24px; display: inline-block; text-align: center;">▲</span>
                                 <div class="flex-1">
                                     <div class="flex items-center gap-1 flex-wrap">
                                         <h3 class="font-bold text-base">Anthropic Claude</h3>
@@ -320,7 +320,7 @@
                         <!-- Perplexity (Optional) -->
                         <div class="provider-card">
                             <div class="flex items-center gap-2 mb-2">
-                                <span class="text-2xl">■</span>
+                                <span class="text-2xl font-bold" style="color: #1FB6FF; width: 24px; display: inline-block; text-align: center;">■</span>
                                 <div class="flex-1">
                                     <div class="flex items-center gap-1 flex-wrap">
                                         <h3 class="font-bold text-base">Perplexity AI</h3>
@@ -369,7 +369,7 @@
                         <!-- DeepSeek (Optional - Ultra Low Cost) -->
                         <div class="provider-card">
                             <div class="flex items-center gap-2 mb-2">
-                                <span class="text-2xl">★</span>
+                                <span class="text-2xl font-bold" style="color: #FFD700; width: 24px; display: inline-block; text-align: center;">★</span>
                                 <div class="flex-1">
                                     <div class="flex items-center gap-1 flex-wrap">
                                         <h3 class="font-bold text-base">DeepSeek</h3>
@@ -861,7 +861,7 @@
             const keys = window.apiKeyManager.keys;
             const providers = [
                 { id: 'gemini', shape: '◆', letter: 'G', name: 'Gemini', color: '#4285F4' },
-                { id: 'openai', shape: '●', letter: 'O', name: 'OpenAI', color: '#10A37F' },
+                { id: 'openai', shape: '◇', letter: 'O', name: 'OpenAI', color: '#10A37F' },
                 { id: 'anthropic', shape: '▲', letter: 'C', name: 'Claude', color: '#D97757' },
                 { id: 'perplexity', shape: '■', letter: 'P', name: 'Perplexity', color: '#1FB6FF' },
                 { id: 'deepseek', shape: '★', letter: 'D', name: 'DeepSeek', color: '#FFD700' }
