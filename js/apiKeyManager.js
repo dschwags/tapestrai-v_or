@@ -1,6 +1,7 @@
 /**
- * tapestrAI v3.0 - API Key Manager
- * Manages API keys for 4 AI providers with encrypted storage
+ * tapestrAI v3.1.0 - API Key Manager (with DeepSeek)
+ * Manages API keys for 5 AI providers with encrypted storage
+ * Last updated: 2025-10-31 00:28 EDT
  */
 
 class APIKeyManager {

@@ -1,7 +1,8 @@
 /**
- * Cloudflare Worker for tapestrAI API Proxy
+ * Cloudflare Worker for tapestrAI v3.1.0 - API Proxy (with DeepSeek)
  * Handles all external API calls to bypass CORS
- * Supports: Gemini, OpenAI, Anthropic, Perplexity
+ * Supports: Gemini, OpenAI, Anthropic, Perplexity, DeepSeek
+ * Last updated: 2025-10-31 00:28 EDT
  */
 
 export default {
