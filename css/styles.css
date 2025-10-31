@@ -207,6 +207,20 @@ body {
   color: #dc2626;
 }
 
+/* === Token Tracker === */
+.token-detail-item {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  transition: all 0.2s ease;
+}
+
+.token-detail-item:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
 /* Old status indicators (deprecated but kept for compatibility) */
 .status-indicator {
   display: inline-flex;

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>tapestrAI - Unravel your artifact's story</title>
-    <!-- Version: 3.2.0 - Unique Shapes & Better Status | Build: 2025-10-31 15:05 EDT>
+    <!-- Version: 3.2.0 - Unique Shapes & Better Status | Build: 2025-10-31 15:09 EDT>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -19,6 +19,7 @@
     <script src="js/agentOrchestrator.js" defer></script>
     <script src="js/progressUI.js" defer></script>
     <script src="js/costTracker.js" defer></script>
+    <script src="js/tokenTracker.js" defer></script>
     <script src="js/errorHandler.js" defer></script>
     <script src="js/main.js" defer></script>
 </head>
@@ -42,6 +43,20 @@
             </div>
             <div id="api-quick-status" class="flex items-center gap-1 sm:gap-2 flex-wrap" title="Click to expand API configuration">
                 <!-- Populated by JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Token Usage Tracker (Collapsible) -->
+        <div id="token-tracker-container" class="bg-white border border-gray-200 rounded-lg px-4 py-3 mb-3 shadow-sm">
+            <button onclick="toggleTokenTracker()" class="w-full flex items-center justify-between hover:opacity-80 transition-opacity">
+                <div class="flex items-center gap-2">
+                    <span class="text-sm">📊</span>
+                    <span class="text-sm font-semibold text-gray-800">Token Usage</span>
+                </div>
+                <span id="token-tracker-icon" class="text-gray-600 text-sm">▼</span>
+            </button>
+            <div id="token-details-container" class="hidden mt-3 space-y-2">
+                <!-- Populated by tokenTracker.js -->
             </div>
         </div>
         
@@ -894,6 +909,23 @@
             
             // Update quick status icons with activity tracking
             updateQuickStatusWithActivity();
+        }
+        
+        function toggleTokenTracker() {
+            const container = document.getElementById('token-details-container');
+            const icon = document.getElementById('token-tracker-icon');
+            
+            if (container.classList.contains('hidden')) {
+                container.classList.remove('hidden');
+                icon.textContent = '▲';
+                // Update the display
+                if (window.tokenTracker) {
+                    window.tokenTracker.updateDetailedView();
+                }
+            } else {
+                container.classList.add('hidden');
+                icon.textContent = '▼';
+            }
         }
     </script>
 
