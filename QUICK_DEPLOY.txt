@@ -1,0 +1,44 @@
+═══════════════════════════════════════════════════════════════
+  QUICK DEPLOY - Copy/Paste These 5 Commands
+═══════════════════════════════════════════════════════════════
+
+npm install -g wrangler
+
+wrangler login
+
+cd /home/runner/app/worker
+
+npm install
+
+npm run deploy
+
+═══════════════════════════════════════════════════════════════
+  Test It Worked (Browser Console - Press F12)
+═══════════════════════════════════════════════════════════════
+
+fetch('https://tapestrai-worker.david-ec6.workers.dev/api/deepseek', {
+  method: 'OPTIONS'
+}).then(r => console.log('Status:', r.status));
+
+Expected: Status: 200
+
+═══════════════════════════════════════════════════════════════
+  Then Test Your API Key
+═══════════════════════════════════════════════════════════════
+
+1. Go to https://tapestrai.pages.dev
+2. Hard refresh: Ctrl + Shift + R
+3. Enter DeepSeek API key
+4. Click "Test & Save"
+5. Should see: ✅ "API key is valid!"
+
+═══════════════════════════════════════════════════════════════
+  Need Help?
+═══════════════════════════════════════════════════════════════
+
+START_HERE.md           - Main guide
+DEPLOY_CHECKLIST.md     - Quick checklist
+WRANGLER_DEPLOY_DUMMYPROOF.md - Full detailed guide
+DEPLOYMENT_SUMMARY.md   - Complete summary
+
+═══════════════════════════════════════════════════════════════
