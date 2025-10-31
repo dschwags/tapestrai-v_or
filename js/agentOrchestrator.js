@@ -659,6 +659,72 @@ Focus on factual accuracy, not opinions.`;
     }
     return [...new Set(urls)]; // Remove duplicates
   }
+  
+  /**
+   * Handle follow-up questions using Gemini
+   */
+  async askFollowup(images, prompt, apiKeyManager) {
+    const apiKey = apiKeyManager.keys.gemini;
+    if (!apiKey) {
+      throw new Error('Gemini API key required for follow-up questions');
+    }
+    
+    const config = apiKeyManager.providers.gemini;
+    const model = config.model;
+    const endpoint = config.useWorker ? config.endpoint : config.directEndpoint;
+    
+    // Prepare image parts if images provided
+    const imageParts = images && images.length > 0 ? images.map(img => ({
+      inline_data: {
+        mime_type: 'image/jpeg',
+        data: img.data.split(',')[1] // Remove data:image/jpeg;base64, prefix
+      }
+    })) : [];
+    
+    const requestBody = {
+      contents: [
+        {
+          parts: [
+            { text: prompt },
+            ...imageParts
+          ]
+        }
+      ],
+      generationConfig: {
+        temperature: 0.7,
+        maxOutputTokens: 1000
+      }
+    };
+    
+    const url = apiKeyManager.useWorker 
+      ? `${endpoint}?key=${apiKey}`
+      : `${endpoint}/${model}:generateContent?key=${apiKey}`;
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody)
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error?.message || `Gemini API failed: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    // Track usage
+    if (data.usageMetadata && window.costTracker) {
+      window.costTracker.trackCall(
+        'gemini',
+        data.usageMetadata.promptTokenCount || 0,
+        data.usageMetadata.candidatesTokenCount || 0,
+        model
+      );
+    }
+    
+    return data.candidates[0].content.parts[0].text;
+  }
 }
 
 // Create global class

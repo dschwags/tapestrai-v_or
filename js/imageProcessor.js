@@ -7,7 +7,7 @@ class ImageProcessor {
   constructor() {
     this.maxSizeMB = 20;
     this.targetSizeMB = 4; // Compress to 4MB for API efficiency
-    this.maxImages = 3;
+    this.maxImages = 5;
     this.allowedFormats = ['image/jpeg', 'image/png', 'image/webp'];
     this.images = [];
   }

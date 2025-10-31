@@ -475,11 +475,12 @@ class APIKeyManager {
     const count = Object.keys(this.keys).length;
     
     const levels = {
-      0: { stars: '', name: 'No Analysis', description: 'Add Gemini API key to begin' },
+      0: { stars: '', name: 'Not Configured', description: 'Add Gemini API key to begin' },
       1: { stars: '⭐', name: 'Basic Analysis', description: 'Single-agent material examination' },
       2: { stars: '⭐⭐', name: 'Enhanced Analysis', description: 'Cross-verified insights' },
       3: { stars: '⭐⭐⭐', name: 'Comprehensive Analysis', description: 'Multi-perspective research' },
-      4: { stars: '⭐⭐⭐⭐', name: 'Professional Analysis', description: 'Expert-level synthesis' }
+      4: { stars: '⭐⭐⭐⭐', name: 'Professional Analysis', description: 'Expert-level synthesis' },
+      5: { stars: '⭐⭐⭐⭐⭐', name: 'Elite Analysis', description: 'Full AI research team activated' }
     };
     
     return levels[count] || levels[0];

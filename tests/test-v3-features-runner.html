@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>tapestrAI v3 Features - BugX Test Runner</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #6B46C1;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .test-info {
+            background: #F7FAFC;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .test-info h3 {
+            margin-top: 0;
+            color: #4A5568;
+        }
+        
+        .test-info ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .test-info li {
+            margin: 5px 0;
+        }
+        
+        .run-btn {
+            background: #6B46C1;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .run-btn:hover {
+            background: #553C9A;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(107, 70, 193, 0.3);
+        }
+        
+        .run-btn:disabled {
+            background: #CBD5E0;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        #console-output {
+            background: #1A202C;
+            color: #E2E8F0;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            display: none;
+        }
+        
+        #console-output.active {
+            display: block;
+        }
+        
+        .log-line {
+            margin: 2px 0;
+            white-space: pre-wrap;
+        }
+        
+        .status-bar {
+            background: #EDF2F7;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+        }
+        
+        .status-bar.active {
+            display: block;
+        }
+        
+        .status-bar.running {
+            background: #FED7D7;
+            color: #9B2C2C;
+        }
+        
+        .status-bar.success {
+            background: #C6F6D5;
+            color: #22543D;
+        }
+        
+        .status-bar.failed {
+            background: #FED7D7;
+            color: #9B2C2C;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 tapestrAI v3 Features Test Suite</h1>
+        <p class="subtitle">BugX Automated Testing Framework</p>
+        
+        <div class="test-info">
+            <h3>📋 What This Test Suite Validates:</h3>
+            <ul>
+                <li>✅ <strong>Analysis Level:</strong> "Not Configured" → "Elite Analysis" (5 APIs)</li>
+                <li>✅ <strong>DeepSeek Badge:</strong> Changed from "100x Cheaper!" to "Optional"</li>
+                <li>✅ <strong>Image Upload Limit:</strong> Increased from 3 to 5 images</li>
+                <li>✅ <strong>Token Tracker:</strong> All 5 API providers displayed</li>
+                <li>✅ <strong>Follow-up Questions:</strong> New interactive feature</li>
+                <li>✅ <strong>Multi-Format Export:</strong> TXT, Markdown, HTML, PDF</li>
+                <li>✅ <strong>Integration Tests:</strong> All components working together</li>
+                <li>✅ <strong>Error Handling:</strong> Graceful failure modes</li>
+            </ul>
+        </div>
+        
+        <button class="run-btn" id="run-tests" onclick="runTests()">
+            🚀 Run All Tests
+        </button>
+        
+        <div class="status-bar" id="status-bar"></div>
+        
+        <div id="console-output"></div>
+    </div>
+    
+    <!-- Load tapestrAI app scripts -->
+    <script src="../js/apiKeyManager.js"></script>
+    <script src="../js/imageProcessor.js"></script>
+    <script src="../js/universalAnalyzer.js"></script>
+    <script src="../js/agentOrchestrator.js"></script>
+    <script src="../js/progressUI.js"></script>
+    <script src="../js/costTracker.js"></script>
+    <script src="../js/tokenTracker.js"></script>
+    <script src="../js/errorHandler.js"></script>
+    <script src="../js/main.js"></script>
+    
+    <!-- Load BugX Framework -->
+    <script src="bugx-framework.js"></script>
+    
+    <!-- Load Test Suite -->
+    <script src="bugx-v3-features-tests.js"></script>
+    
+    <script>
+        // Capture console output
+        const consoleOutput = document.getElementById('console-output');
+        const statusBar = document.getElementById('status-bar');
+        const runButton = document.getElementById('run-tests');
+        
+        // Override console methods to capture output
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        function appendToConsole(message, type = 'log') {
+            consoleOutput.classList.add('active');
+            const line = document.createElement('div');
+            line.className = 'log-line';
+            line.textContent = message;
+            
+            if (type === 'error') {
+                line.style.color = '#FC8181';
+            } else if (type === 'warn') {
+                line.style.color = '#F6AD55';
+            }
+            
+            consoleOutput.appendChild(line);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            appendToConsole(args.join(' '), 'log');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            appendToConsole('❌ ' + args.join(' '), 'error');
+        };
+        
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            appendToConsole('⚠️  ' + args.join(' '), 'warn');
+        };
+        
+        async function runTests() {
+            // Clear previous output
+            consoleOutput.innerHTML = '';
+            consoleOutput.classList.add('active');
+            
+            // Update status
+            statusBar.className = 'status-bar active running';
+            statusBar.textContent = '🔄 Running tests...';
+            
+            // Disable button
+            runButton.disabled = true;
+            runButton.textContent = '⏳ Testing...';
+            
+            try {
+                // Run BugX tests
+                const results = await BugX.runAll();
+                
+                // Update status based on results
+                if (results.failed === 0) {
+                    statusBar.className = 'status-bar active success';
+                    statusBar.textContent = `🎉 SUCCESS! All ${results.passed} tests passed.`;
+                } else {
+                    statusBar.className = 'status-bar active failed';
+                    statusBar.textContent = `⚠️ ${results.failed} of ${results.total} tests failed.`;
+                }
+            } catch (error) {
+                statusBar.className = 'status-bar active failed';
+                statusBar.textContent = '❌ Test suite failed to run: ' + error.message;
+                console.error('Test execution error:', error);
+            } finally {
+                // Re-enable button
+                runButton.disabled = false;
+                runButton.textContent = '🔄 Run Tests Again';
+            }
+        }
+        
+        // Show initial message
+        console.log('✨ tapestrAI v3 Features Test Suite Ready');
+        console.log('Click "Run All Tests" to begin validation...\n');
+    </script>
+</body>
+</html>

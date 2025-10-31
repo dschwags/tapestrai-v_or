@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>tapestrAI - Unravel your artifact's story</title>
-    <!-- Version: 3.2.0 - Unique Shapes & Better Status | Build: 2025-10-31 16:42 EDT>
+    <!-- Version: 3.3.0 - Follow-up Questions & Multi-Format Export | Build: 2025-10-31 18:46 EDT>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -38,7 +38,7 @@
                 <div class="h-3 w-px bg-gray-300 hidden sm:block"></div>
                 <div class="flex items-center gap-2">
                     <span class="text-xs sm:text-sm text-gray-600">Analysis:</span>
-                    <span id="analysis-level-display" class="text-xs sm:text-sm font-semibold">No Analysis</span>
+                    <span id="analysis-level-display" class="text-xs sm:text-sm font-semibold">Not Configured</span>
                 </div>
             </div>
             <div id="api-quick-status" class="flex items-center gap-1 sm:gap-2 flex-wrap" title="Click to expand API configuration">
@@ -373,7 +373,7 @@
                                 <div class="flex-1">
                                     <div class="flex items-center gap-1 flex-wrap">
                                         <h3 class="font-bold text-base">DeepSeek</h3>
-                                        <span class="badge bg-green-500 text-white text-[10px] px-1">100x Cheaper!</span>
+                                        <span class="badge bg-gray-500 text-white text-[10px] px-1">Optional</span>
                                         <div class="api-status-badge" id="deepseek-status-badge" data-provider="deepseek">
                                             <span class="status-text" id="deepseek-status-text">○ Not Set</span>
                                             <button class="status-menu-btn hidden" id="deepseek-menu-btn" onclick="toggleStatusMenu('deepseek')" title="Manage key">⋮</button>
@@ -544,7 +544,7 @@
             <p>
                 Built with 💜 by D. Schwager / BrewX • 
                 <a href="https://github.com" class="underline hover:text-white">GitHub</a> • 
-                v3.1.0 (DeepSeek) • Build 2025-10-31
+                v3.3.0 • Build 2025-01-31
             </p>
             <p class="mt-1">
                 100% Client-Side • Your images never leave your browser • 
