@@ -721,7 +721,7 @@
             // Update count
             const countEl = document.getElementById('keys-configured-count');
             if (countEl) {
-                countEl.textContent = `${configuredCount}/4`;
+                countEl.textContent = `${configuredCount}/5`;
             }
             
             // Update analysis level
@@ -738,7 +738,8 @@
                     { id: 'gemini', icon: '🔷', name: 'Gemini' },
                     { id: 'openai', icon: '🟢', name: 'OpenAI' },
                     { id: 'anthropic', icon: '🟣', name: 'Claude' },
-                    { id: 'perplexity', icon: '🔵', name: 'Perplexity' }
+                    { id: 'perplexity', icon: '🔵', name: 'Perplexity' },
+                    { id: 'deepseek', icon: '🔷', name: 'DeepSeek' }
                 ];
                 
                 quickStatus.innerHTML = providers.map(p => {
