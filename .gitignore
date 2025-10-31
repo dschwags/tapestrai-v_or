@@ -53,3 +53,8 @@ temp/
 *_api_key.txt
 api-keys.json
 secrets.json
+
+# Cloudflare Wrangler
+.wrangler/
+wrangler.toml.local
+.dev.vars

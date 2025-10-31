@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deployment Config Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            background: #2d2d2d;
+            border-left: 3px solid #4CAF50;
+        }
+        .error {
+            border-left-color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Deployment Configuration Test</h1>
+    <div id="output"></div>
+
+    <script src="../js/apiKeyManager.js"></script>
+    <script>
+        const output = document.getElementById('output');
+        
+        function log(message, isError = false) {
+            const div = document.createElement('div');
+            div.className = isError ? 'result error' : 'result';
+            div.textContent = message;
+            output.appendChild(div);
+        }
+
+        // Test configuration
+        log('Testing tapestrAI Deployment Configuration...');
+        log('');
+        
+        // Check hostname
+        log(`Hostname: ${window.location.hostname}`);
+        log(`Full URL: ${window.location.href}`);
+        log('');
+        
+        // Create APIKeyManager instance
+        const manager = new APIKeyManager();
+        
+        // Check Worker URL detection
+        log(`Worker URL: ${manager.workerUrl || 'null (not detected)'}`);
+        log(`Using Worker: ${manager.useWorker}`);
+        log('');
+        
+        // Check endpoints for each provider
+        log('Provider Endpoints:');
+        Object.keys(manager.providers).forEach(provider => {
+            const config = manager.providers[provider];
+            log(`  ${provider}: ${config.endpoint}`);
+        });
+        log('');
+        
+        // Verify Worker is being used
+        if (manager.useWorker) {
+            log('✅ Worker proxy detected and enabled');
+            log(`✅ All requests will go through: ${manager.workerUrl}`);
+            
+            // Check if endpoints contain worker URL
+            const allUseWorker = Object.keys(manager.providers).every(provider => {
+                return manager.providers[provider].endpoint.includes(manager.workerUrl);
+            });
+            
+            if (allUseWorker) {
+                log('✅ All provider endpoints correctly use Worker proxy');
+            } else {
+                log('❌ ERROR: Not all providers using Worker proxy!', true);
+            }
+        } else {
+            log('❌ WARNING: Worker not detected - only Gemini will work', true);
+            log('  This means CORS will block OpenAI, Anthropic, Perplexity', true);
+        }
+        
+        log('');
+        log('Test complete. Check above for any errors.');
+    </script>
+</body>
+</html>

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BugX Worker Tests - tapestrAI</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            color: #333;
+            margin-top: 0;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+        }
+        
+        .test-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+        }
+        
+        .test-info h3 {
+            margin-top: 0;
+            color: #667eea;
+        }
+        
+        #console-output {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            max-height: 600px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .run-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+        }
+        
+        .run-button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .run-button:active {
+            transform: translateY(0);
+        }
+        
+        .clear-button {
+            background: #6c757d;
+        }
+        
+        .clear-button:hover {
+            background: #5a6268;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin: 5px;
+        }
+        
+        .status-ready {
+            background: #28a745;
+            color: white;
+        }
+        
+        .status-warning {
+            background: #ffc107;
+            color: #333;
+        }
+        
+        .status-info {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .environment-info {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        
+        .environment-info strong {
+            color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 BugX Worker Integration Tests</h1>
+        
+        <div class="test-info">
+            <h3>Cloudflare Worker Deployment Tests</h3>
+            <p>This test suite validates the Worker proxy integration for tapestrAI v3.0.</p>
+            <p><strong>What's being tested:</strong></p>
+            <ul>
+                <li>✅ Worker URL detection (Cloudflare vs localhost)</li>
+                <li>✅ Endpoint configuration for all 4 providers</li>
+                <li>✅ Request format compatibility (Worker proxy format)</li>
+                <li>✅ CORS bypass strategy validation</li>
+                <li>✅ Environment detection logic</li>
+                <li>✅ Configuration consistency checks</li>
+            </ul>
+            
+            <div class="environment-info">
+                <strong>Current Environment:</strong><br>
+                Hostname: <code id="current-hostname"></code><br>
+                Protocol: <code id="current-protocol"></code><br>
+                Location: <code id="current-location"></code>
+            </div>
+        </div>
+        
+        <div style="margin: 20px 0;">
+            <button class="run-button" onclick="runTests()">▶️ Run Worker Tests</button>
+            <button class="run-button clear-button" onclick="clearConsole()">🗑️ Clear Output</button>
+        </div>
+        
+        <h3>Test Output:</h3>
+        <div id="console-output">Click "Run Worker Tests" to start...</div>
+    </div>
+
+    <!-- Load dependencies -->
+    <script src="bugx-framework.js"></script>
+    <script src="../js/apiKeyManager.js"></script>
+    <script src="../js/universalAnalyzer.js"></script>
+    <script src="../js/imageProcessor.js"></script>
+    <script src="../js/costTracker.js"></script>
+    
+    <script>
+        // Display current environment
+        document.getElementById('current-hostname').textContent = window.location.hostname;
+        document.getElementById('current-protocol').textContent = window.location.protocol;
+        document.getElementById('current-location').textContent = window.location.href;
+        
+        // Intercept console logs and display in the UI
+        const consoleOutput = document.getElementById('console-output');
+        const originalLog = console.log;
+        const originalError = console.error;
+        
+        function logToUI(message, type = 'log') {
+            const color = type === 'error' ? '#f48771' : 
+                         message.includes('✅') ? '#4ade80' :
+                         message.includes('❌') ? '#f87171' :
+                         message.includes('📦') ? '#60a5fa' :
+                         message.includes('🎉') ? '#4ade80' :
+                         message.includes('⚠️') ? '#fbbf24' : '#d4d4d4';
+            
+            consoleOutput.innerHTML += `<span style="color: ${color}">${message}</span>\n`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            logToUI(args.join(' '));
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            logToUI(args.join(' '), 'error');
+        };
+        
+        function clearConsole() {
+            consoleOutput.innerHTML = '';
+            console.log('Console cleared. Ready for new test run...\n');
+        }
+        
+        async function runTests() {
+            clearConsole();
+            console.log('🚀 Starting Cloudflare Worker Integration Tests...\n');
+            console.log('=' .repeat(60));
+            
+            // Load and run the Worker tests
+            const script = document.createElement('script');
+            script.src = 'bugx-worker-tests.js';
+            document.body.appendChild(script);
+        }
+    </script>
+</body>
+</html>

@@ -70,12 +70,18 @@ class UniversalAnalyzer {
   async runGeminiAnalysis(imageData, userContext, apiKeyManager) {
     const prompt = this.getUniversalAnalysisPrompt();
     const apiKey = apiKeyManager.keys.gemini;
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`;
+    const config = apiKeyManager.providers.gemini;
+    
+    // Use Worker proxy if available, otherwise direct API
+    const useWorker = apiKeyManager.useWorker;
+    const endpoint = useWorker 
+      ? `${config.endpoint}?key=${apiKey}`
+      : `${config.directEndpoint}/gemini-2.0-flash-exp:generateContent?key=${apiKey}`;
     
     // Extract base64 from data URL
     const base64Data = imageData.includes(',') ? imageData.split(',')[1] : imageData;
     
-    const requestBody = {
+    const geminiPayload = {
       contents: [{
         parts: [
           { text: prompt },
@@ -103,6 +109,12 @@ class UniversalAnalyzer {
         { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }
       ]
     };
+    
+    // Wrap in Worker format if using proxy
+    const requestBody = useWorker ? {
+      model: config.model,
+      payload: geminiPayload
+    } : geminiPayload;
     
     const response = await fetch(endpoint, {
       method: 'POST',
@@ -207,11 +219,20 @@ Analyze this artifact systematically using the following structure. Be thorough,
 - **Authentication needs**: If valuable, what authentication needed
 
 ## 8. CONFIDENCE ASSESSMENT
-For each major conclusion, provide confidence level:
-- Materials: X%
-- Dating: X%
-- Origin: X%
-- Purpose: X%
+For each major conclusion, provide confidence level (0-100%):
+- **Materials identification**: X% (based on visible evidence)
+- **Dating accuracy**: X% (based on style, wear, marks)
+- **Geographic origin**: X% (based on style, marks, construction)
+- **Primary purpose**: X% (based on form and features)
+- **Overall analysis**: X% (average confidence)
+
+For low confidence (<70%), explain what information is missing or ambiguous.
+
+## 9. KEY CLAIMS FOR VERIFICATION
+List 3-5 specific factual claims that could be verified through research:
+1. [Specific claim about maker, date, or provenance]
+2. [Claim about style period or origin]
+3. [Claim about materials or manufacturing technique]
 
 ---
 
@@ -232,7 +253,9 @@ Be precise, evidence-based, and acknowledge uncertainty. Begin your analysis now
       culturalContext: this.extractSection(rawText, /##?\s*5\..*?CULTURAL/i, /##?\s*6\./i),
       category: this.extractSection(rawText, /##?\s*6\..*?CATEGORY/i, /##?\s*7\./i),
       researchRecommendations: this.extractSection(rawText, /##?\s*7\..*?RESEARCH/i, /##?\s*8\./i),
-      confidence: this.extractSection(rawText, /##?\s*8\..*?CONFIDENCE/i, null)
+      confidence: this.extractSection(rawText, /##?\s*8\..*?CONFIDENCE/i, /##?\s*9\./i),
+      keyClaims: this.extractSection(rawText, /##?\s*9\..*?KEY CLAIMS/i, null),
+      confidenceScores: this.extractConfidenceScores(rawText)
     };
   }
   
@@ -280,6 +303,67 @@ Be precise, evidence-based, and acknowledge uncertainty. Begin your analysis now
     });
     
     return Array.from(keywords);
+  }
+  
+  /**
+   * Extract structured confidence scores from analysis
+   */
+  extractConfidenceScores(text) {
+    const scores = {
+      materials: 0,
+      dating: 0,
+      origin: 0,
+      purpose: 0,
+      overall: 0
+    };
+    
+    // Extract confidence section
+    const confSection = this.extractSection(text, /##?\s*8\..*?CONFIDENCE/i, /##?\s*9\./i);
+    
+    // Parse confidence percentages
+    const patterns = {
+      materials: /Materials?\s*(?:identification)?[:\s]*([0-9]{1,3})%/i,
+      dating: /Dating\s*(?:accuracy)?[:\s]*([0-9]{1,3})%/i,
+      origin: /(?:Geographic\s*)?Origin[:\s]*([0-9]{1,3})%/i,
+      purpose: /Purpose[:\s]*([0-9]{1,3})%/i,
+      overall: /Overall[:\s]*([0-9]{1,3})%/i
+    };
+    
+    Object.keys(patterns).forEach(key => {
+      const match = confSection.match(patterns[key]);
+      if (match) {
+        scores[key] = parseInt(match[1], 10);
+      }
+    });
+    
+    // Calculate overall if not provided
+    if (scores.overall === 0) {
+      const validScores = Object.values(scores).filter(s => s > 0);
+      if (validScores.length > 0) {
+        scores.overall = Math.round(validScores.reduce((a, b) => a + b) / validScores.length);
+      }
+    }
+    
+    return scores;
+  }
+  
+  /**
+   * Extract key claims for verification
+   */
+  extractKeyClaims(text) {
+    const claimsSection = this.extractSection(text, /##?\s*9\..*?KEY CLAIMS/i, null);
+    const claims = [];
+    
+    // Match numbered list items
+    const matches = claimsSection.matchAll(/[0-9]\.[\s]*(.+?)(?=\n[0-9]\.|$)/gs);
+    for (const match of matches) {
+      const claim = match[1].trim();
+      if (claim && claim.length > 10) {
+        claims.push(claim);
+      }
+    }
+    
+    return claims.slice(0, 5); // Max 5 claims
   }
 }
 

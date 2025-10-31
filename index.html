@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>tapestrAI - Unravel your artifact's story</title>
+    <!-- Version: 3.1.0 with DeepSeek | Build: 2025-10-31 00:28 EDT -->
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -31,7 +32,7 @@
                 <div class="flex items-center gap-2">
                     <span class="text-sm">🔑</span>
                     <span class="text-xs sm:text-sm font-medium text-gray-700">API Keys:</span>
-                    <span id="keys-configured-count" class="text-xs sm:text-sm font-bold text-brand">0/4</span>
+                    <span id="keys-configured-count" class="text-xs sm:text-sm font-bold text-brand">0/5</span>
                 </div>
                 <div class="h-3 w-px bg-gray-300 hidden sm:block"></div>
                 <div class="flex items-center gap-2">
@@ -120,7 +121,7 @@
                         </div>
                     </div>
 
-                    <!-- Provider Cards (2x2 Grid) -->
+                    <!-- Provider Cards (3+2 Grid for 5 providers) -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                             <!-- Gemini (Required) -->
                         <div class="provider-card required">
@@ -318,6 +319,55 @@
                                 <a href="https://www.perplexity.ai/settings/api" target="_blank" class="text-blue-500 hover:underline">Get key →</a>
                             </div>
                         </div>
+
+                        <!-- DeepSeek (Optional - Ultra Low Cost) -->
+                        <div class="provider-card">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="text-2xl">🔷</span>
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-1 flex-wrap">
+                                        <h3 class="font-bold text-base">DeepSeek</h3>
+                                        <span class="badge bg-green-500 text-white text-[10px] px-1">100x Cheaper!</span>
+                                        <div class="api-status-badge" id="deepseek-status-badge" data-provider="deepseek">
+                                            <span class="status-text" id="deepseek-status-text">○ Not Set</span>
+                                            <button class="status-menu-btn hidden" id="deepseek-menu-btn" onclick="toggleStatusMenu('deepseek')" title="Manage key">⋮</button>
+                                            <div class="status-menu hidden" id="deepseek-menu">
+                                                <button onclick="editAPIKey('deepseek')" class="menu-item">✏️ Edit Key</button>
+                                                <button onclick="removeAPIKey('deepseek')" class="menu-item text-red-600">🗑️ Remove</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p class="text-xs text-gray-600">Cultural context (ultra-low cost alternative)</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex gap-1 mb-2">
+                            <input 
+                                type="password" 
+                                id="deepseek-key-input" 
+                                placeholder="sk-..."
+                                class="input-field flex-1"
+                                autocomplete="off"
+                            />
+                            <button 
+                                class="eyeball-toggle text-lg px-2" 
+                                onclick="toggleKeyVisibility('deepseek')"
+                                title="Show/Hide key">
+                                👁️
+                            </button>
+                            <button 
+                                class="btn btn-success text-xs px-2 py-1 whitespace-nowrap" 
+                                id="deepseek-test-btn"
+                                onclick="saveAPIKey('deepseek')">
+                                Test & Save
+                            </button>
+                            </div>
+                            
+                            <div class="text-xs text-gray-600">
+                                <strong>5M tokens/day FREE for 30 days!</strong> • 
+                                <a href="https://platform.deepseek.com/api_keys" target="_blank" class="text-blue-500 hover:underline">Get key →</a>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Skip Option (only shown initially) -->
@@ -448,7 +498,7 @@
             <p>
                 Built with 💜 by D. Schwager / BrewX • 
                 <a href="https://github.com" class="underline hover:text-white">GitHub</a> • 
-                v3.0
+                v3.1.0 (DeepSeek) • Build 2025-10-31
             </p>
             <p class="mt-1">
                 100% Client-Side • Your images never leave your browser • 

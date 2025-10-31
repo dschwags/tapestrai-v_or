@@ -1,0 +1,7 @@
+name = "tapestrai-worker"
+main = "worker/index.js"
+compatibility_date = "2024-01-01"
+
+# Worker configuration
+[env.production]
+name = "tapestrai-worker"

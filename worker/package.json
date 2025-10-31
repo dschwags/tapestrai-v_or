@@ -1,0 +1,16 @@
+{
+  "name": "tapestrai-worker",
+  "version": "1.0.0",
+  "description": "Cloudflare Worker for tapestrAI API proxy",
+  "main": "index.js",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev"
+  },
+  "keywords": ["cloudflare", "worker", "api", "proxy"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}
