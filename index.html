@@ -40,8 +40,21 @@
                     <span id="analysis-level-display" class="text-xs sm:text-sm font-semibold">No Analysis</span>
                 </div>
             </div>
-            <div id="api-quick-status" class="flex items-center gap-1 sm:gap-2">
+            <div id="api-quick-status" class="flex items-center gap-1 sm:gap-2 flex-wrap" title="Click to expand API configuration">
                 <!-- Populated by JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Analysis Status Banner (shown during/after analysis) -->
+        <div id="analysis-status-banner" class="hidden bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg px-4 py-3 mb-3 shadow-sm">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+                <div class="flex items-center gap-2">
+                    <span id="analysis-status-icon" class="text-lg">⚡</span>
+                    <span id="analysis-status-text" class="text-sm font-semibold text-gray-800">Analyzing...</span>
+                </div>
+                <div id="analysis-apis-used" class="flex items-center gap-2 text-xs flex-wrap">
+                    <!-- Populated during/after analysis -->
+                </div>
             </div>
         </div>
 
@@ -712,6 +725,148 @@
             toggleStatusMenu(provider);
         }
 
+        // Track which APIs are being used in current analysis
+        window.activeAPIs = {
+            analyzing: new Set(),
+            used: new Set(),
+            lastAnalysis: {}
+        };
+        
+        function setAPIAnalyzing(provider, isAnalyzing) {
+            if (isAnalyzing) {
+                window.activeAPIs.analyzing.add(provider);
+            } else {
+                window.activeAPIs.analyzing.delete(provider);
+                window.activeAPIs.used.add(provider);
+            }
+            updateAnalysisStatusBanner();
+            updateQuickStatusWithActivity();
+        }
+        
+        function resetAnalysisTracking() {
+            window.activeAPIs.analyzing.clear();
+            window.activeAPIs.used.clear();
+            window.activeAPIs.lastAnalysis = {};
+            updateAnalysisStatusBanner();
+        }
+        
+        function recordAPIUsage(provider, cost, time) {
+            window.activeAPIs.lastAnalysis[provider] = { cost, time, used: true };
+            window.activeAPIs.used.add(provider);
+            updateAnalysisStatusBanner();
+        }
+        
+        function updateAnalysisStatusBanner() {
+            const banner = document.getElementById('analysis-status-banner');
+            const statusIcon = document.getElementById('analysis-status-icon');
+            const statusText = document.getElementById('analysis-status-text');
+            const apisUsedDiv = document.getElementById('analysis-apis-used');
+            
+            if (!banner || !statusIcon || !statusText || !apisUsedDiv) return;
+            
+            const analyzing = window.activeAPIs.analyzing.size > 0;
+            const hasResults = Object.keys(window.activeAPIs.lastAnalysis).length > 0;
+            
+            if (analyzing) {
+                // Show analyzing status
+                banner.classList.remove('hidden');
+                banner.className = 'bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg px-4 py-3 mb-3 shadow-sm';
+                statusIcon.textContent = '⚡';
+                statusText.textContent = 'Analyzing with AI...';
+                
+                const analyzingList = Array.from(window.activeAPIs.analyzing).map(p => {
+                    const config = window.apiKeyManager?.providers[p];
+                    return `<span class="inline-flex items-center gap-1 px-2 py-1 bg-yellow-100 rounded-full animate-pulse">
+                        <span>${config?.icon || '🔷'}</span>
+                        <span class="font-medium">${config?.name || p}</span>
+                    </span>`;
+                }).join('');
+                
+                apisUsedDiv.innerHTML = analyzingList;
+                
+            } else if (hasResults) {
+                // Show results
+                banner.classList.remove('hidden');
+                banner.className = 'bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg px-4 py-3 mb-3 shadow-sm';
+                statusIcon.textContent = '✅';
+                
+                const usedAPIs = Object.keys(window.activeAPIs.lastAnalysis);
+                const totalCost = Object.values(window.activeAPIs.lastAnalysis)
+                    .reduce((sum, api) => sum + (api.cost || 0), 0);
+                const totalTime = Object.values(window.activeAPIs.lastAnalysis)
+                    .reduce((sum, api) => sum + (api.time || 0), 0);
+                
+                statusText.textContent = `Analysis Complete! (${usedAPIs.length} APIs, $${totalCost.toFixed(4)}, ${totalTime.toFixed(1)}s)`;
+                
+                const resultsList = usedAPIs.map(p => {
+                    const config = window.apiKeyManager?.providers[p];
+                    const data = window.activeAPIs.lastAnalysis[p];
+                    return `<span class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 rounded-full" title="$${data.cost.toFixed(4)}, ${data.time.toFixed(1)}s">
+                        <span>${config?.icon || '🔷'}</span>
+                        <span class="font-medium">${config?.name || p}</span>
+                        <span class="text-green-600">✓</span>
+                    </span>`;
+                }).join('');
+                
+                apisUsedDiv.innerHTML = resultsList;
+                
+                // Auto-hide after 10 seconds
+                setTimeout(() => {
+                    banner.classList.add('hidden');
+                }, 10000);
+                
+            } else {
+                // Hide banner
+                banner.classList.add('hidden');
+            }
+        }
+        
+        function updateQuickStatusWithActivity() {
+            const quickStatus = document.getElementById('api-quick-status');
+            if (!quickStatus || !window.apiKeyManager) return;
+            
+            const keys = window.apiKeyManager.keys;
+            const providers = [
+                { id: 'gemini', icon: '🔷', name: 'Gemini' },
+                { id: 'openai', icon: '🟢', name: 'OpenAI' },
+                { id: 'anthropic', icon: '🟣', name: 'Claude' },
+                { id: 'perplexity', icon: '🔵', name: 'Perplexity' },
+                { id: 'deepseek', icon: '🔷', name: 'DeepSeek' }
+            ];
+            
+            quickStatus.innerHTML = providers.map(p => {
+                const hasKey = keys[p.id];
+                const isAnalyzing = window.activeAPIs.analyzing.has(p.id);
+                const wasUsed = window.activeAPIs.used.has(p.id);
+                
+                let stateIcon, stateText, className;
+                
+                if (isAnalyzing) {
+                    stateIcon = '⚡';
+                    stateText = 'Analyzing';
+                    className = 'opacity-100 animate-pulse';
+                } else if (wasUsed) {
+                    stateIcon = '✅';
+                    stateText = 'Just Used';
+                    className = 'opacity-100';
+                } else if (hasKey) {
+                    stateIcon = '🟢';
+                    stateText = 'Ready';
+                    className = 'opacity-100';
+                } else {
+                    stateIcon = '⚪';
+                    stateText = 'Not Set';
+                    className = 'opacity-40';
+                }
+                
+                return `<span class="flex items-center gap-1 ${className} transition-all duration-200" 
+                               title="${p.name}: ${stateText}">
+                    <span class="text-xs">${stateIcon}</span>
+                    <span class="text-xs font-medium hidden sm:inline">${p.name}</span>
+                </span>`;
+            }).join('');
+        }
+        
         function updateGlobalSummary() {
             if (!window.apiKeyManager) return;
             
@@ -731,26 +886,8 @@
                 levelEl.textContent = `${level.name} ${level.stars}`;
             }
             
-            // Update quick status icons with names
-            const quickStatus = document.getElementById('api-quick-status');
-            if (quickStatus) {
-                const providers = [
-                    { id: 'gemini', icon: '🔷', name: 'Gemini' },
-                    { id: 'openai', icon: '🟢', name: 'OpenAI' },
-                    { id: 'anthropic', icon: '🟣', name: 'Claude' },
-                    { id: 'perplexity', icon: '🔵', name: 'Perplexity' },
-                    { id: 'deepseek', icon: '🔷', name: 'DeepSeek' }
-                ];
-                
-                quickStatus.innerHTML = providers.map(p => {
-                    const hasKey = keys[p.id];
-                    const opacity = hasKey ? 'opacity-100' : 'opacity-30';
-                    return `<span class="flex items-center gap-1 ${opacity} transition-opacity" title="${p.name}: ${hasKey ? 'Configured' : 'Not configured'}">
-                        <span class="text-sm">${p.icon}</span>
-                        <span class="text-xs font-medium hidden sm:inline">${p.name}</span>
-                    </span>`;
-                }).join('');
-            }
+            // Update quick status icons with activity tracking
+            updateQuickStatusWithActivity();
         }
     </script>
 
