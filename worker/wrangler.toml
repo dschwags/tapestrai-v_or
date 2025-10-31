@@ -1,0 +1,9 @@
+name = "tapestrai-worker"
+main = "index.js"
+compatibility_date = "2024-10-01"
+
+# Account details - you'll need to update these after login
+# Wrangler will automatically use your authenticated account
+
+[env.production]
+name = "tapestrai-worker"
