@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>tapestrAI - Unravel your artifact's story</title>
-    <!-- Version: 3.2.0 - Unique Shapes & Better Status | Build: 2025-10-31 16:25 EDT>
+    <!-- Version: 3.2.0 - Unique Shapes & Better Status | Build: 2025-10-31 16:42 EDT>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -172,7 +172,7 @@
                             <!-- Gemini (Required) -->
                         <div class="provider-card required">
                             <div class="flex items-center gap-2 mb-2">
-                                <span class="text-2xl font-bold" style="color: #4285F4; width: 24px; display: inline-block; text-align: center;">◆</span>
+                                <span class="text-2xl font-bold" style="color: #4285F4; width: 24px; display: inline-block; text-align: center;">❶</span>
                                 <div class="flex-1">
                                     <div class="flex items-center gap-2 flex-wrap">
                                         <h3 class="font-bold text-base">Google Gemini</h3>
@@ -222,7 +222,7 @@
                         <!-- OpenAI (Optional) -->
                         <div class="provider-card">
                             <div class="flex items-center gap-2 mb-2">
-                                <span class="text-2xl font-bold" style="color: #10A37F; width: 24px; display: inline-block; text-align: center;">◇</span>
+                                <span class="text-2xl font-bold" style="color: #10A37F; width: 24px; display: inline-block; text-align: center;">❷</span>
                                 <div class="flex-1">
                                     <div class="flex items-center gap-1 flex-wrap">
                                         <h3 class="font-bold text-base">OpenAI GPT-4</h3>
@@ -271,7 +271,7 @@
                         <!-- Anthropic Claude (Optional) -->
                         <div class="provider-card">
                             <div class="flex items-center gap-2 mb-2">
-                                <span class="text-2xl font-bold" style="color: #D97757; width: 24px; display: inline-block; text-align: center;">▲</span>
+                                <span class="text-2xl font-bold" style="color: #D97757; width: 24px; display: inline-block; text-align: center;">❸</span>
                                 <div class="flex-1">
                                     <div class="flex items-center gap-1 flex-wrap">
                                         <h3 class="font-bold text-base">Anthropic Claude</h3>
@@ -320,7 +320,7 @@
                         <!-- Perplexity (Optional) -->
                         <div class="provider-card">
                             <div class="flex items-center gap-2 mb-2">
-                                <span class="text-2xl font-bold" style="color: #1FB6FF; width: 24px; display: inline-block; text-align: center;">■</span>
+                                <span class="text-2xl font-bold" style="color: #1FB6FF; width: 24px; display: inline-block; text-align: center;">❹</span>
                                 <div class="flex-1">
                                     <div class="flex items-center gap-1 flex-wrap">
                                         <h3 class="font-bold text-base">Perplexity AI</h3>
@@ -369,7 +369,7 @@
                         <!-- DeepSeek (Optional - Ultra Low Cost) -->
                         <div class="provider-card">
                             <div class="flex items-center gap-2 mb-2">
-                                <span class="text-2xl font-bold" style="color: #FFD700; width: 24px; display: inline-block; text-align: center;">★</span>
+                                <span class="text-2xl font-bold" style="color: #FFD700; width: 24px; display: inline-block; text-align: center;">❺</span>
                                 <div class="flex-1">
                                     <div class="flex items-center gap-1 flex-wrap">
                                         <h3 class="font-bold text-base">DeepSeek</h3>
@@ -860,11 +860,11 @@
             
             const keys = window.apiKeyManager.keys;
             const providers = [
-                { id: 'gemini', shape: '◆', letter: 'G', name: 'Gemini', color: '#4285F4' },
-                { id: 'openai', shape: '◇', letter: 'O', name: 'OpenAI', color: '#10A37F' },
-                { id: 'anthropic', shape: '▲', letter: 'C', name: 'Claude', color: '#D97757' },
-                { id: 'perplexity', shape: '■', letter: 'P', name: 'Perplexity', color: '#1FB6FF' },
-                { id: 'deepseek', shape: '★', letter: 'D', name: 'DeepSeek', color: '#FFD700' }
+                { id: 'gemini', activeShape: '❶', inactiveShape: '➀', letter: 'G', name: 'Gemini', color: '#4285F4' },
+                { id: 'openai', activeShape: '❷', inactiveShape: '➁', letter: 'O', name: 'OpenAI', color: '#10A37F' },
+                { id: 'anthropic', activeShape: '❸', inactiveShape: '➂', letter: 'C', name: 'Claude', color: '#D97757' },
+                { id: 'perplexity', activeShape: '❹', inactiveShape: '➃', letter: 'P', name: 'Perplexity', color: '#1FB6FF' },
+                { id: 'deepseek', activeShape: '❺', inactiveShape: '➄', letter: 'D', name: 'DeepSeek', color: '#FFD700' }
             ];
             
             quickStatus.innerHTML = providers.map(p => {
@@ -896,18 +896,23 @@
                     className = 'opacity-40';
                 }
                 
-                // Make ALL shapes GREEN when active (analyzing or used), gray when inactive
-                let displayColor = shapeColor;
+                // Choose shape and color based on state
+                let displayShape, displayColor;
                 if (isAnalyzing || wasUsed) {
+                    displayShape = p.activeShape;
                     displayColor = '#10B981'; // Green for active/working
-                } else if (!hasKey) {
-                    displayColor = '#D1D5DB'; // Gray for not configured
+                } else if (hasKey) {
+                    displayShape = p.activeShape;
+                    displayColor = p.color; // Brand color when ready
+                } else {
+                    displayShape = p.inactiveShape;
+                    displayColor = '#9CA3AF'; // Gray for not configured
                 }
                 
                 // Responsive: uniform-sized shape + letter on mobile, shape + name on desktop
                 return `<span class="flex items-center gap-1 ${className} transition-all duration-200" 
                                title="${p.name}: ${stateText}">
-                    <span class="text-xl font-bold leading-none" style="color: ${displayColor}; width: 20px; display: inline-block; text-align: center;">${stateIcon}${p.shape}</span>
+                    <span class="text-xl font-bold leading-none" style="color: ${displayColor}; width: 20px; display: inline-block; text-align: center;">${stateIcon}${displayShape}</span>
                     <span class="text-xs font-bold sm:hidden">${p.letter}</span>
                     <span class="text-xs font-medium hidden sm:inline">${p.name}</span>
                 </span>`;
