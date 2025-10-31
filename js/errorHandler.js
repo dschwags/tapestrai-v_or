@@ -36,15 +36,27 @@ class ErrorHandler {
    */
   categorizeError(error) {
     const message = error.message.toLowerCase();
+    const statusCode = error.status || error.statusCode || 0;
+    
+    // Out of tokens / quota exceeded detection
+    if (message.includes('insufficient_quota') || 
+        message.includes('quota_exceeded') ||
+        message.includes('out of tokens') ||
+        message.includes('billing') ||
+        message.includes('usage limit') ||
+        statusCode === 429 ||
+        message.includes('rate limit') || 
+        message.includes('quota')) {
+      return 'quota_exceeded';
+    }
     
     if (message.includes('network') || message.includes('fetch')) {
       return 'network';
     }
-    if (message.includes('api') || message.includes('key') || message.includes('auth')) {
+    if (message.includes('api') || message.includes('key') || message.includes('auth') || 
+        message.includes('invalid_api_key') ||
+        statusCode === 401 || statusCode === 403) {
       return 'api';
-    }
-    if (message.includes('rate limit') || message.includes('quota')) {
-      return 'rate_limit';
     }
     if (message.includes('timeout')) {
       return 'timeout';
@@ -70,10 +82,10 @@ class ErrorHandler {
         message: 'There was a problem with your API key. Please verify it is correct and has not expired.',
         actions: ['Check Keys', 'Retry']
       },
-      rate_limit: {
-        title: 'Rate Limit Exceeded',
-        message: 'You have exceeded the rate limit for this AI provider. Please wait a moment and try again.',
-        actions: ['Wait & Retry']
+      quota_exceeded: {
+        title: '⚠️ Out of Tokens',
+        message: 'You have run out of API tokens or exceeded your quota for this provider. Please check your billing status or add more credits.',
+        actions: ['Check Billing', 'Use Different API']
       },
       timeout: {
         title: 'Request Timeout',
@@ -160,11 +172,12 @@ class ErrorHandler {
         'Try regenerating the API key',
         'Check provider status page'
       ],
-      rate_limit: [
-        'Wait a few minutes before trying again',
-        'Check your provider\'s rate limits',
-        'Consider upgrading your plan',
-        'Reduce the number of images'
+      quota_exceeded: [
+        'Check your API provider\'s billing dashboard',
+        'Verify you have sufficient credits/tokens',
+        'Add payment method if required',
+        'Use a different API provider',
+        'Wait until your quota resets (if on free tier)'
       ],
       timeout: [
         'Try with fewer images',
