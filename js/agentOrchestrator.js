@@ -47,15 +47,25 @@ class AgentOrchestrator {
       // Step 3: Run additional agents if available
       const additionalResults = {};
       
-      // Cultural Specialist (OpenAI)
-      if (apiKeyManager.keys.openai && progressUI) {
+      // Cultural Specialist (OpenAI or DeepSeek)
+      const hasCulturalAnalysis = apiKeyManager.keys.openai || apiKeyManager.keys.deepseek;
+      if (hasCulturalAnalysis && progressUI) {
         progressUI.setStep('cultural', 'active');
         try {
-          additionalResults.cultural = await this.runCulturalAnalysis(
-            imageDataArray[0],
-            primaryAnalysis,
-            apiKeyManager
-          );
+          // Prioritize DeepSeek if available (100x cheaper!), otherwise use OpenAI
+          if (apiKeyManager.keys.deepseek) {
+            additionalResults.cultural = await this.runDeepSeekCultural(
+              imageDataArray[0],
+              primaryAnalysis,
+              apiKeyManager
+            );
+          } else if (apiKeyManager.keys.openai) {
+            additionalResults.cultural = await this.runCulturalAnalysis(
+              imageDataArray[0],
+              primaryAnalysis,
+              apiKeyManager
+            );
+          }
         } catch (error) {
           console.error('Cultural analysis failed:', error);
           if (progressUI) progressUI.setError('cultural', error.message);
@@ -97,9 +107,40 @@ class AgentOrchestrator {
       // Step 4: Complete analysis
       if (progressUI) progressUI.setStep('complete', 'active');
       
+      //Decide if we need synthesis
+      const perspectiveCount = Object.keys(additionalResults).length;
+      const needsSynthesis = perspectiveCount > 0; // 2+ perspectives = synthesize
+      
+      let finalAnalysis = primaryAnalysis;
+      let factCheck = null;
+      
+      // If we have multiple perspectives, run Gemini synthesis
+      if (needsSynthesis) {
+        finalAnalysis = await this.runGeminiSynthesis(
+          primaryAnalysis,
+          additionalResults,
+          apiKeyManager
+        );
+      }
+      
+      // If Perplexity available, fact-check key claims
+      if (apiKeyManager.keys.perplexity && primaryAnalysis.keyClaims) {
+        try {
+          const claims = this.universalAnalyzer.extractKeyClaims(primaryAnalysis.rawText);
+          if (claims && claims.length > 0) {
+            factCheck = await this.runFactCheck(claims, apiKeyManager);
+          }
+        } catch (error) {
+          console.error('Fact-checking failed:', error);
+          // Don't fail entire analysis if fact-checking fails
+        }
+      }
+      
       // Combine all results
       const finalResult = {
         primary: primaryAnalysis,
+        synthesis: needsSynthesis ? finalAnalysis : null,
+        factCheck: factCheck,
         additional: additionalResults,
         agents: agents.map(a => a.name),
         timestamp: new Date().toISOString(),
@@ -140,7 +181,8 @@ class AgentOrchestrator {
    */
   async runCulturalAnalysis(imageData, primaryAnalysis, apiKeyManager) {
     const apiKey = apiKeyManager.keys.openai;
-    const endpoint = 'https://api.openai.com/v1/chat/completions';
+    const config = apiKeyManager.providers.openai;
+    const endpoint = config.endpoint; // Uses Worker proxy or direct API
     
     const contextPrompt = `Based on this primary artifact analysis, provide deep cultural and social context:
 
@@ -202,11 +244,79 @@ Provide a comprehensive cultural narrative (500-800 words).`;
   }
   
   /**
+   * Run cultural analysis with DeepSeek
+   */
+  async runDeepSeekCultural(imageData, primaryAnalysis, apiKeyManager) {
+    const apiKey = apiKeyManager.keys.deepseek;
+    const config = apiKeyManager.providers.deepseek;
+    const endpoint = config.endpoint; // Uses Worker proxy or direct API
+    
+    const contextPrompt = `Based on this primary artifact analysis, provide deep cultural and social context:
+
+PRIMARY ANALYSIS SUMMARY:
+${primaryAnalysis.rawText.substring(0, 1000)}...
+
+FOCUS ON:
+1. Cultural significance and symbolism
+2. Social context of use (class, gender, occasion)
+3. Historical cultural practices related to this type of object
+4. Regional cultural variations
+5. Evolution of cultural meaning over time
+
+Provide a comprehensive cultural narrative (500-800 words).`;
+    
+    const requestBody = {
+      model: 'deepseek-chat',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a cultural historian and anthropologist specializing in material culture and social history.'
+        },
+        {
+          role: 'user',
+          content: contextPrompt
+        }
+      ],
+      max_tokens: 1500,
+      temperature: 0.7
+    };
+    
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestBody)
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error?.message || `DeepSeek API failed: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    // Track usage
+    if (data.usage && window.costTracker) {
+      window.costTracker.trackCall(
+        'deepseek',
+        data.usage.prompt_tokens || 0,
+        data.usage.completion_tokens || 0,
+        'deepseek-chat'
+      );
+    }
+    
+    return data.choices[0].message.content;
+  }
+  
+  /**
    * Run historical research with Perplexity
    */
   async runHistoricalResearch(primaryAnalysis, apiKeyManager) {
     const apiKey = apiKeyManager.keys.perplexity;
-    const endpoint = 'https://api.perplexity.ai/chat/completions';
+    const config = apiKeyManager.providers.perplexity;
+    const endpoint = config.endpoint; // Uses Worker proxy or direct API
     
     // Extract keywords for research
     const keywords = primaryAnalysis.keywords.slice(0, 5).join(', ');
@@ -337,6 +447,217 @@ Write 600-1000 words as a unified expert assessment.`;
     }
     
     return data.content[0].text;
+  }
+  
+  /**
+   * Run Gemini synthesis of multiple perspectives
+   */
+  async runGeminiSynthesis(primaryAnalysis, additionalResults, apiKeyManager) {
+    const apiKey = apiKeyManager.keys.gemini;
+    const config = apiKeyManager.providers.gemini;
+    
+    // Use Worker proxy if available
+    const useWorker = apiKeyManager.useWorker;
+    const endpoint = useWorker 
+      ? `${config.endpoint}?key=${apiKey}`
+      : `${config.directEndpoint}/gemini-2.0-flash-exp:generateContent?key=${apiKey}`;
+    
+    // Build synthesis prompt based on available perspectives
+    let synthesisPrompt = `You previously analyzed an artifact. Now synthesize multiple perspectives:
+
+YOUR MATERIAL ANALYSIS (key points):
+${primaryAnalysis.rawText.substring(0, 1000)}...
+
+`;
+    
+    if (additionalResults.cultural) {
+      synthesisPrompt += `CULTURAL CONTEXT (from historian):
+${additionalResults.cultural.substring(0, 800)}...
+
+`;
+    }
+    
+    if (additionalResults.research) {
+      synthesisPrompt += `RESEARCH FINDINGS (from web):
+${additionalResults.research.substring(0, 800)}...
+
+`;
+    }
+    
+    synthesisPrompt += `Create a comprehensive synthesis (800-1200 words):
+
+`;
+    
+    if (additionalResults.cultural && additionalResults.research) {
+      synthesisPrompt += `1. VALIDATED FINDINGS
+   - What does research confirm about your analysis?
+   - Adjust confidence based on evidence
+
+2. CULTURAL ENRICHMENT  
+   - How does cultural context explain physical features?
+   - What social meaning did this artifact carry?
+
+3. INTEGRATED NARRATIVE
+   - Combine material, cultural, and historical research
+   - Tell the artifact's story with supporting evidence
+
+4. CONFIDENCE ASSESSMENT
+   - Update your confidence scores
+   - Mark what's confirmed vs. speculative`;
+    } else if (additionalResults.cultural) {
+      synthesisPrompt += `1. INTEGRATED NARRATIVE
+   - Combine material facts with cultural meaning
+   - How physical features relate to social use
+
+2. CULTURAL ENRICHMENT
+   - Symbolic meanings and social context
+   - Historical cultural practices
+
+3. CONFIDENCE ASSESSMENT
+   - Maintain your confidence scores
+   - Note areas cultural context enriches`;
+    } else if (additionalResults.research) {
+      synthesisPrompt += `1. VALIDATION
+   - What research confirms or contradicts your analysis?
+   - Adjust confidence based on evidence
+
+2. RESEARCH INTEGRATION
+   - New information from sources
+   - Comparable items found
+
+3. CONFIDENCE UPDATE
+   - Updated confidence scores with evidence
+   - Verified facts vs. educated guesses`;
+    }
+    
+    const geminiPayload = {
+      contents: [{
+        parts: [{ text: synthesisPrompt }]
+      }],
+      generationConfig: {
+        temperature: 0.6,
+        topK: 32,
+        topP: 1,
+        maxOutputTokens: 2048
+      }
+    };
+    
+    const requestBody = useWorker ? {
+      model: config.model,
+      payload: geminiPayload
+    } : geminiPayload;
+    
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody)
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error?.message || `Gemini synthesis failed: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    if (!data.candidates || data.candidates.length === 0) {
+      throw new Error('Gemini synthesis returned no results');
+    }
+    
+    const synthesisText = data.candidates[0].content.parts[0].text;
+    
+    // Track usage
+    if (data.usageMetadata && window.costTracker) {
+      window.costTracker.trackCall(
+        'gemini',
+        data.usageMetadata.promptTokenCount || 0,
+        data.usageMetadata.candidatesTokenCount || 0,
+        'gemini-2.0-flash-exp'
+      );
+    }
+    
+    return synthesisText;
+  }
+  
+  /**
+   * Run fact-checking on key claims with Perplexity
+   */
+  async runFactCheck(claims, apiKeyManager) {
+    const apiKey = apiKeyManager.keys.perplexity;
+    const config = apiKeyManager.providers.perplexity;
+    const endpoint = config.endpoint; // Uses Worker proxy or direct API
+    
+    const factCheckPrompt = `Verify these artifact-related claims using reliable sources:
+
+${claims.map((c, i) => `${i+1}. ${c}`).join('\n')}
+
+For each claim, provide:
+- Verification status (Confirmed/Contradicted/Unclear)
+- Brief explanation (1-2 sentences)
+- Source URL if available
+
+Focus on factual accuracy, not opinions.`;
+    
+    const requestBody = {
+      model: 'sonar-pro',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a fact-checker specializing in art history and antiques. Verify claims using authoritative sources.'
+        },
+        {
+          role: 'user',
+          content: factCheckPrompt
+        }
+      ],
+      max_tokens: 1000,
+      temperature: 0.2
+    };
+    
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestBody)
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error?.message || `Fact-checking failed: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    // Track usage
+    if (data.usage && window.costTracker) {
+      window.costTracker.trackCall(
+        'perplexity',
+        data.usage.prompt_tokens || 0,
+        data.usage.completion_tokens || 0,
+        'sonar-pro'
+      );
+    }
+    
+    return {
+      claims: claims,
+      verification: data.choices[0].message.content,
+      citations: this.extractCitations(data.choices[0].message.content)
+    };
+  }
+  
+  /**
+   * Extract citations from fact-check response
+   */
+  extractCitations(text) {
+    const urls = [];
+    const urlPattern = /https?:\/\/[^\s)]+/g;
+    const matches = text.match(urlPattern);
+    if (matches) {
+      urls.push(...matches);
+    }
+    return [...new Set(urls)]; // Remove duplicates
   }
 }
 

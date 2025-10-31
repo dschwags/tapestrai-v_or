@@ -259,6 +259,8 @@ class TapestrAI {
     if (!container) return;
     
     const primary = results.primary;
+    const synthesis = results.synthesis;
+    const factCheck = results.factCheck;
     const additional = results.additional || {};
     
     // Build HTML
@@ -281,7 +283,48 @@ class TapestrAI {
           ${this.renderSection('Cultural Context', primary.culturalContext)}
           ${this.renderSection('Category', primary.category)}
           ${this.renderSection('Confidence Assessment', primary.confidence)}
+        ${primary.keyClaims ? this.renderSection('Key Claims for Verification', primary.keyClaims) : ''}
         </div>
+        
+        <!-- Synthesis (if multiple perspectives) -->
+        ${synthesis ? `
+          <div class="mb-6 border-t-4 border-blue-300 pt-6">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-2xl">🎯</span>
+              <h3 class="text-xl font-bold text-blue-900">Integrated Analysis</h3>
+              <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Multi-Perspective Synthesis</span>
+            </div>
+            <div class="prose max-w-none bg-blue-50 rounded-lg p-4">
+              ${this.formatText(synthesis)}
+            </div>
+          </div>
+        ` : ''}
+        
+        <!-- Fact-Check Section -->
+        ${factCheck ? `
+          <div class="mb-6 border-t-4 border-green-300 pt-6">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-2xl">✓</span>
+              <h3 class="text-xl font-bold text-green-900">Fact Verification</h3>
+              <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Research-Verified Claims</span>
+            </div>
+            <div class="bg-green-50 rounded-lg p-4">
+              <div class="prose max-w-none">
+                ${this.formatText(factCheck.verification)}
+              </div>
+              ${factCheck.citations && factCheck.citations.length > 0 ? `
+                <div class="mt-4 pt-4 border-t border-green-200">
+                  <h4 class="font-semibold text-green-900 mb-2">📚 Sources:</h4>
+                  <ul class="space-y-1">
+                    ${factCheck.citations.map(url => `
+                      <li><a href="${url}" target="_blank" class="text-blue-600 hover:underline text-sm break-all">${url}</a></li>
+                    `).join('')}
+                  </ul>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+        ` : ''}
         
         <!-- Additional Agent Results -->
         ${additional.cultural ? `
@@ -308,17 +351,7 @@ class TapestrAI {
           </div>
         ` : ''}
         
-        ${additional.synthesis ? `
-          <div class="mb-6 border-t pt-6">
-            <div class="flex items-center gap-2 mb-3">
-              <span class="text-2xl">📖</span>
-              <h3 class="text-xl font-bold text-gray-800">Expert Synthesis</h3>
-            </div>
-            <div class="prose max-w-none">
-              ${this.formatText(additional.synthesis)}
-            </div>
-          </div>
-        ` : ''}
+
         
         <!-- Keywords -->
         ${primary.keywords && primary.keywords.length > 0 ? `
@@ -412,8 +445,15 @@ ${primary.rawText}
       exportText += `\n\n=== HISTORICAL RESEARCH ===\n\n${additional.research}`;
     }
     
-    if (additional.synthesis) {
-      exportText += `\n\n=== EXPERT SYNTHESIS ===\n\n${additional.synthesis}`;
+    if (this.currentResults.synthesis) {
+      exportText += `\n\n=== INTEGRATED ANALYSIS ===\n\n${this.currentResults.synthesis}`;
+    }
+    
+    if (this.currentResults.factCheck) {
+      exportText += `\n\n=== FACT VERIFICATION ===\n\n${this.currentResults.factCheck.verification}`;
+      if (this.currentResults.factCheck.citations && this.currentResults.factCheck.citations.length > 0) {
+        exportText += `\n\nSources:\n${this.currentResults.factCheck.citations.map(url => `- ${url}`).join('\n')}`;
+      }
     }
     
     // Download as text file

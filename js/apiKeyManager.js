@@ -5,13 +5,19 @@
 
 class APIKeyManager {
   constructor() {
+    // Detect if we're using Cloudflare Worker proxy
+    // This will be set to the Worker URL after deployment
+    this.workerUrl = this.getWorkerUrl();
+    this.useWorker = !!this.workerUrl;
+    
     // Supported AI providers
     this.providers = {
       gemini: {
         name: 'Google Gemini',
         required: true,
         model: 'gemini-2.0-flash-exp',
-        endpoint: 'https://generativelanguage.googleapis.com/v1beta/models',
+        endpoint: this.useWorker ? `${this.workerUrl}/api/gemini` : 'https://generativelanguage.googleapis.com/v1beta/models',
+        directEndpoint: 'https://generativelanguage.googleapis.com/v1beta/models',
         icon: '🔷',
         color: '#4285F4',
         getKeyUrl: 'https://aistudio.google.com/apikey',
@@ -24,7 +30,8 @@ class APIKeyManager {
         name: 'OpenAI',
         required: false,
         model: 'gpt-4-turbo',
-        endpoint: 'https://api.openai.com/v1/chat/completions',
+        endpoint: this.useWorker ? `${this.workerUrl}/api/openai` : 'https://api.openai.com/v1/chat/completions',
+        directEndpoint: 'https://api.openai.com/v1/chat/completions',
         icon: '🟢',
         color: '#10A37F',
         getKeyUrl: 'https://platform.openai.com/api-keys',
@@ -37,7 +44,8 @@ class APIKeyManager {
         name: 'Anthropic Claude',
         required: false,
         model: 'claude-sonnet-4-20250514',
-        endpoint: 'https://api.anthropic.com/v1/messages',
+        endpoint: this.useWorker ? `${this.workerUrl}/api/anthropic` : 'https://api.anthropic.com/v1/messages',
+        directEndpoint: 'https://api.anthropic.com/v1/messages',
         icon: '🟣',
         color: '#8B5CF6',
         getKeyUrl: 'https://console.anthropic.com/',
@@ -50,13 +58,28 @@ class APIKeyManager {
         name: 'Perplexity AI',
         required: false,
         model: 'sonar-pro',
-        endpoint: 'https://api.perplexity.ai/chat/completions',
+        endpoint: this.useWorker ? `${this.workerUrl}/api/perplexity` : 'https://api.perplexity.ai/chat/completions',
+        directEndpoint: 'https://api.perplexity.ai/chat/completions',
         icon: '🔵',
         color: '#3B82F6',
         getKeyUrl: 'https://www.perplexity.ai/settings/api',
         instructions: 'Get API key from Perplexity Settings. Free tier: 5 requests/day.',
         testPrompt: 'Respond with just "success"',
         costPer1kTokens: 0.001
+      },
+      
+      deepseek: {
+        name: 'DeepSeek',
+        required: false,
+        model: 'deepseek-chat', // V3 model
+        endpoint: this.useWorker ? `${this.workerUrl}/api/deepseek` : 'https://api.deepseek.com/chat/completions',
+        directEndpoint: 'https://api.deepseek.com/chat/completions',
+        icon: '🔷',
+        color: '#1E90FF',
+        getKeyUrl: 'https://platform.deepseek.com/api_keys',
+        instructions: 'Get free API key from DeepSeek Platform. 5M tokens/day free for 30 days! Ultra-low cost after: $0.14/1M input tokens.',
+        testPrompt: 'Respond with just "success"',
+        costPer1kTokens: 0.00014 // Input cost - 100x cheaper than OpenAI!
       }
     };
     
@@ -65,6 +88,26 @@ class APIKeyManager {
     
     this.loadKeys();
     // Don't call initializeUI here - let main.js handle initialization
+  }
+  
+  /**
+   * Get Worker URL from environment or config
+   */
+  getWorkerUrl() {
+    // Check for Worker URL in various places
+    // 1. Environment variable (if bundled)
+    if (typeof WORKER_URL !== 'undefined') {
+      return WORKER_URL;
+    }
+    
+    // 2. Check if deployed on Cloudflare Pages (detect by hostname)
+    if (window.location.hostname.includes('.pages.dev') || window.location.hostname.includes('tapestrai')) {
+      // Deployed on Cloudflare - use worker
+      return 'https://tapestrai-worker.david-ec6.workers.dev';
+    }
+    
+    // 3. Local development - no worker
+    return null;
   }
   
   /**
@@ -197,19 +240,40 @@ class APIKeyManager {
       
       switch(provider) {
         case 'gemini':
-          response = await fetch(
-            `${config.endpoint}/${config.model}:generateContent?key=${key}`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                contents: [{
-                  parts: [{ text: config.testPrompt }]
-                }],
-                generationConfig: { maxOutputTokens: 10 }
-              })
-            }
-          );
+          if (this.useWorker) {
+            // Using Worker proxy
+            response = await fetch(
+              `${config.endpoint}?key=${key}`,
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  model: config.model,
+                  payload: {
+                    contents: [{
+                      parts: [{ text: config.testPrompt }]
+                    }],
+                    generationConfig: { maxOutputTokens: 10 }
+                  }
+                })
+              }
+            );
+          } else {
+            // Direct API call
+            response = await fetch(
+              `${config.endpoint}/${config.model}:generateContent?key=${key}`,
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  contents: [{
+                    parts: [{ text: config.testPrompt }]
+                  }],
+                  generationConfig: { maxOutputTokens: 10 }
+                })
+              }
+            );
+          }
           break;
           
         case 'openai':
@@ -244,6 +308,21 @@ class APIKeyManager {
           break;
           
         case 'perplexity':
+          response = await fetch(config.endpoint, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${key}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              model: config.model,
+              messages: [{ role: 'user', content: config.testPrompt }],
+              max_tokens: 10
+            })
+          });
+          break;
+          
+        case 'deepseek':
           response = await fetch(config.endpoint, {
             method: 'POST',
             headers: {
