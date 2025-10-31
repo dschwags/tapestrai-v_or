@@ -827,11 +827,11 @@
             
             const keys = window.apiKeyManager.keys;
             const providers = [
-                { id: 'gemini', icon: '🔷', name: 'Gemini' },
-                { id: 'openai', icon: '🟢', name: 'OpenAI' },
-                { id: 'anthropic', icon: '🟣', name: 'Claude' },
-                { id: 'perplexity', icon: '🔵', name: 'Perplexity' },
-                { id: 'deepseek', icon: '🔷', name: 'DeepSeek' }
+                { id: 'gemini', icon: '🔷', letter: 'G', name: 'Gemini' },
+                { id: 'openai', icon: '🟢', letter: 'O', name: 'OpenAI' },
+                { id: 'anthropic', icon: '🟣', letter: 'C', name: 'Claude' },
+                { id: 'perplexity', icon: '🔵', letter: 'P', name: 'Perplexity' },
+                { id: 'deepseek', icon: '🔷', letter: 'D', name: 'DeepSeek' }
             ];
             
             quickStatus.innerHTML = providers.map(p => {
@@ -859,9 +859,11 @@
                     className = 'opacity-40';
                 }
                 
+                // Responsive: letter on mobile, full name on desktop
                 return `<span class="flex items-center gap-1 ${className} transition-all duration-200" 
                                title="${p.name}: ${stateText}">
-                    <span class="text-xs">${stateIcon}</span>
+                    <span class="text-sm">${stateIcon}</span>
+                    <span class="text-xs font-bold sm:hidden">${p.letter}</span>
                     <span class="text-xs font-medium hidden sm:inline">${p.name}</span>
                 </span>`;
             }).join('');
