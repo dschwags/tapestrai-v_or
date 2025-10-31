@@ -6,14 +6,43 @@
 class TokenTracker {
     constructor() {
         this.usage = {
-            gemini: { used: 0, limit: null, remaining: null, resetDate: null },
-            openai: { used: 0, limit: null, remaining: null, resetDate: null },
-            anthropic: { used: 0, limit: null, remaining: null, resetDate: null },
-            perplexity: { used: 0, limit: null, remaining: null, resetDate: null },
-            deepseek: { used: 0, limit: null, remaining: null, resetDate: null }
+            gemini: { used: 0, limit: null, remaining: null, resetDate: null, sessionCost: 0, sessionTokens: 0 },
+            openai: { used: 0, limit: null, remaining: null, resetDate: null, sessionCost: 0, sessionTokens: 0 },
+            anthropic: { used: 0, limit: null, remaining: null, resetDate: null, sessionCost: 0, sessionTokens: 0 },
+            perplexity: { used: 0, limit: null, remaining: null, resetDate: null, sessionCost: 0, sessionTokens: 0 },
+            deepseek: { used: 0, limit: null, remaining: null, resetDate: null, sessionCost: 0, sessionTokens: 0 }
+        };
+        
+        // Cost per 1M tokens (approximate, for display purposes)
+        this.costPer1M = {
+            gemini: 0,        // Free tier
+            openai: 30,       // GPT-4 input
+            anthropic: 15,    // Claude 3
+            perplexity: 5,    // Sonar
+            deepseek: 0.3     // 100x cheaper!
+        };
+        
+        // Session tracking (resets on page reload)
+        this.sessionStart = Date.now();
+        this.sessionData = {
+            totalCost: 0,
+            totalTokens: 0,
+            analyses: 0
+        };
+        
+        // Historical analytics (persisted)
+        this.analytics = {
+            allTime: {
+                totalCost: 0,
+                totalTokens: 0,
+                analyses: 0,
+                byProvider: {}
+            },
+            history: [] // Array of analysis records
         };
         
         this.loadFromStorage();
+        this.loadAnalytics();
     }
     
     /**
@@ -63,10 +92,36 @@ class TokenTracker {
     /**
      * Record token usage from response
      */
-    recordUsage(provider, tokensUsed) {
+    recordUsage(provider, tokensUsed, cost = null) {
         if (!this.usage[provider]) return;
         
+        // Calculate cost if not provided
+        if (cost === null) {
+            cost = (tokensUsed / 1000000) * this.costPer1M[provider];
+        }
+        
+        // Update provider stats
         this.usage[provider].used += tokensUsed;
+        this.usage[provider].sessionTokens += tokensUsed;
+        this.usage[provider].sessionCost += cost;
+        
+        // Update session totals
+        this.sessionData.totalTokens += tokensUsed;
+        this.sessionData.totalCost += cost;
+        
+        // Update all-time analytics
+        this.analytics.allTime.totalTokens += tokensUsed;
+        this.analytics.allTime.totalCost += cost;
+        
+        if (!this.analytics.allTime.byProvider[provider]) {
+            this.analytics.allTime.byProvider[provider] = {
+                tokens: 0,
+                cost: 0,
+                analyses: 0
+            };
+        }
+        this.analytics.allTime.byProvider[provider].tokens += tokensUsed;
+        this.analytics.allTime.byProvider[provider].cost += cost;
         
         // If we have remaining count, update it
         if (this.usage[provider].remaining !== null) {
@@ -74,7 +129,9 @@ class TokenTracker {
         }
         
         this.saveToStorage();
+        this.saveAnalytics();
         this.updateUI();
+        this.updateSessionDisplay();
         this.checkWarnings(provider);
     }
     
@@ -208,7 +265,7 @@ class TokenTracker {
      * Update detailed token view
      */
     updateDetailedView() {
-        const container = document.getElementById('token-details-container');
+        const container = document.getElementById('provider-token-details');
         if (!container) return;
         
         const providers = ['gemini', 'openai', 'anthropic', 'perplexity', 'deepseek'];
@@ -216,28 +273,67 @@ class TokenTracker {
             const data = this.usage[provider];
             const status = this.getStatus(provider);
             const remaining = this.formatRemaining(provider);
+            const costStr = data.sessionCost > 0 ? `$${data.sessionCost.toFixed(4)}` : '$0.00';
+            const tokensStr = this.formatNumber(data.sessionTokens);
             
             return `
-                <div class="token-detail-item">
-                    <div class="flex items-center justify-between">
-                        <span class="font-semibold">${provider.charAt(0).toUpperCase() + provider.slice(1)}</span>
+                <div class="token-detail-item bg-white">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="font-semibold text-sm">${provider.charAt(0).toUpperCase() + provider.slice(1)}</span>
                         <span class="text-xs" style="color: ${status.color}">${status.icon} ${status.text}</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-xs mb-1">
+                        <div>
+                            <span class="text-gray-600">Session:</span> <span class="font-bold">${tokensStr} tokens</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-gray-600">Cost:</span> <span class="font-bold text-brand">${costStr}</span>
+                        </div>
                     </div>
                     ${data.remaining !== null ? `
                         <div class="mt-1">
-                            <div class="text-xs text-gray-600">Remaining: ${remaining} tokens</div>
+                            <div class="text-xs text-gray-600">Available: ${remaining} tokens</div>
                             <div class="w-full bg-gray-200 rounded-full h-2 mt-1">
                                 <div class="h-2 rounded-full transition-all duration-300" 
                                      style="width: ${100 - this.getUsagePercentage(provider)}%; background-color: ${status.color}">
                                 </div>
                             </div>
                         </div>
-                    ` : '<div class="text-xs text-gray-500 mt-1">No usage data available</div>'}
+                    ` : '<div class="text-xs text-gray-500 mt-1">No quota data available</div>'}
                 </div>
             `;
         }).join('');
         
         container.innerHTML = html;
+    }
+    
+    /**
+     * Update session display
+     */
+    updateSessionDisplay() {
+        const costEl = document.getElementById('session-total-cost');
+        const tokensEl = document.getElementById('session-total-tokens');
+        
+        if (costEl) {
+            costEl.textContent = `$${this.sessionData.totalCost.toFixed(4)}`;
+        }
+        
+        if (tokensEl) {
+            tokensEl.textContent = this.formatNumber(this.sessionData.totalTokens);
+        }
+    }
+    
+    /**
+     * Format number with K/M suffix
+     */
+    formatNumber(num) {
+        if (num >= 1000000) {
+            return `${(num / 1000000).toFixed(1)}M`;
+        }
+        if (num >= 1000) {
+            return `${(num / 1000).toFixed(1)}K`;
+        }
+        return num.toString();
     }
     
     /**
@@ -274,11 +370,122 @@ class TokenTracker {
         try {
             const stored = localStorage.getItem('tapestrAI_tokenUsage');
             if (stored) {
-                this.usage = JSON.parse(stored);
+                const data = JSON.parse(stored);
+                // Merge with default structure to handle version upgrades
+                Object.keys(this.usage).forEach(provider => {
+                    if (data[provider]) {
+                        this.usage[provider] = { ...this.usage[provider], ...data[provider] };
+                    }
+                });
             }
         } catch (error) {
             console.warn('Could not load token usage from storage:', error);
         }
+    }
+    
+    /**
+     * Load analytics from localStorage
+     */
+    loadAnalytics() {
+        try {
+            const stored = localStorage.getItem('tapestrAI_analytics');
+            if (stored) {
+                this.analytics = JSON.parse(stored);
+            }
+        } catch (error) {
+            console.warn('Could not load analytics from storage:', error);
+        }
+    }
+    
+    /**
+     * Save analytics to localStorage
+     */
+    saveAnalytics() {
+        try {
+            localStorage.setItem('tapestrAI_analytics', JSON.stringify(this.analytics));
+        } catch (error) {
+            console.warn('Could not save analytics to storage:', error);
+        }
+    }
+    
+    /**
+     * Record analysis completion
+     */
+    recordAnalysis(providers, totalTokens, totalCost) {
+        this.sessionData.analyses++;
+        this.analytics.allTime.analyses++;
+        
+        // Add to history
+        this.analytics.history.push({
+            timestamp: Date.now(),
+            providers: providers,
+            tokens: totalTokens,
+            cost: totalCost
+        });
+        
+        // Keep only last 100 analyses in history
+        if (this.analytics.history.length > 100) {
+            this.analytics.history = this.analytics.history.slice(-100);
+        }
+        
+        providers.forEach(provider => {
+            if (!this.analytics.allTime.byProvider[provider]) {
+                this.analytics.allTime.byProvider[provider] = {
+                    tokens: 0,
+                    cost: 0,
+                    analyses: 0
+                };
+            }
+            this.analytics.allTime.byProvider[provider].analyses++;
+        });
+        
+        this.saveAnalytics();
+    }
+    
+    /**
+     * Get cost/value insights
+     */
+    getInsights() {
+        const providers = Object.keys(this.analytics.allTime.byProvider);
+        const insights = [];
+        
+        // Find most cost-effective provider
+        let bestValue = null;
+        let lowestCostPerAnalysis = Infinity;
+        
+        providers.forEach(provider => {
+            const data = this.analytics.allTime.byProvider[provider];
+            if (data.analyses > 0) {
+                const costPerAnalysis = data.cost / data.analyses;
+                if (costPerAnalysis < lowestCostPerAnalysis) {
+                    lowestCostPerAnalysis = costPerAnalysis;
+                    bestValue = provider;
+                }
+            }
+        });
+        
+        if (bestValue) {
+            insights.push({
+                type: 'best_value',
+                message: `${bestValue.charAt(0).toUpperCase() + bestValue.slice(1)} offers best value at $${lowestCostPerAnalysis.toFixed(4)} per analysis`
+            });
+        }
+        
+        // Check if user is paying for expensive APIs unnecessarily
+        if (this.analytics.allTime.byProvider.openai && 
+            this.analytics.allTime.byProvider.deepseek) {
+            const openaiCost = this.analytics.allTime.byProvider.openai.cost;
+            const deepseekCost = this.analytics.allTime.byProvider.deepseek.cost;
+            if (openaiCost > deepseekCost * 50) {
+                const savings = openaiCost - (deepseekCost * 100);
+                insights.push({
+                    type: 'savings_opportunity',
+                    message: `You could save ~$${savings.toFixed(2)} by using DeepSeek more often`
+                });
+            }
+        }
+        
+        return insights;
     }
     
     /**
@@ -293,14 +500,47 @@ class TokenTracker {
     }
     
     /**
+     * Reset session data (but keep analytics)
+     */
+    resetSession() {
+        Object.keys(this.usage).forEach(provider => {
+            this.usage[provider].sessionTokens = 0;
+            this.usage[provider].sessionCost = 0;
+        });
+        this.sessionData = {
+            totalCost: 0,
+            totalTokens: 0,
+            analyses: 0
+        };
+        this.updateUI();
+        this.updateSessionDisplay();
+    }
+    
+    /**
      * Reset all usage data
      */
     resetAll() {
         Object.keys(this.usage).forEach(provider => {
-            this.usage[provider] = { used: 0, limit: null, remaining: null, resetDate: null };
+            this.usage[provider] = { used: 0, limit: null, remaining: null, resetDate: null, sessionCost: 0, sessionTokens: 0 };
         });
         this.saveToStorage();
         this.updateUI();
+    }
+    
+    /**
+     * Reset analytics (with confirmation)
+     */
+    resetAnalytics() {
+        this.analytics = {
+            allTime: {
+                totalCost: 0,
+                totalTokens: 0,
+                analyses: 0,
+                byProvider: {}
+            },
+            history: []
+        };
+        this.saveAnalytics();
     }
     
     /**
