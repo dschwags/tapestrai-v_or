@@ -365,18 +365,72 @@ class TapestrAI {
           </div>
         ` : ''}
         
+        <!-- Follow-up Questions Section -->
+        <div class="mt-6 pt-6 border-t">
+          <h3 class="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+            <span>💬</span>
+            <span>Have Questions or Need More Details?</span>
+          </h3>
+          <div class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-4">
+            <p class="text-sm text-gray-700 mb-3">
+              You can ask follow-up questions about this analysis or upload additional photos for more accurate identification.
+            </p>
+            <textarea 
+              id="followup-question"
+              placeholder="Example: Can you tell me more about the markings? What period is this from? Should I upload photos from different angles?"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
+              rows="3"></textarea>
+            <div class="mt-3 flex gap-3 flex-wrap">
+              <button 
+                onclick="window.main.submitFollowupQuestion()" 
+                class="btn btn-primary text-sm">
+                ❓ Ask Follow-up Question
+              </button>
+              <button 
+                onclick="window.main.addMorePhotos()" 
+                class="btn bg-purple-500 text-white hover:bg-purple-600 text-sm">
+                📸 Add More Photos
+              </button>
+            </div>
+          </div>
+        </div>
+        
         <!-- Actions -->
-        <div class="mt-6 pt-6 border-t flex gap-3">
-          <button 
-            onclick="window.main.exportResults()" 
-            class="btn btn-primary">
-            📥 Export Results
-          </button>
-          <button 
-            onclick="window.main.startNewAnalysis()" 
-            class="btn bg-gray-500 text-white hover:bg-gray-600">
-            🔄 New Analysis
-          </button>
+        <div class="mt-6 pt-6 border-t">
+          <div class="flex flex-col sm:flex-row gap-3">
+            <div class="flex-1">
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Export Format:</label>
+              <div class="flex gap-2 flex-wrap">
+                <button 
+                  onclick="window.main.exportResults('txt')" 
+                  class="btn bg-gray-600 text-white hover:bg-gray-700 text-sm">
+                  📄 Text (.txt)
+                </button>
+                <button 
+                  onclick="window.main.exportResults('md')" 
+                  class="btn bg-blue-600 text-white hover:bg-blue-700 text-sm">
+                  📝 Markdown (.md)
+                </button>
+                <button 
+                  onclick="window.main.exportResults('html')" 
+                  class="btn bg-green-600 text-white hover:bg-green-700 text-sm">
+                  🌐 HTML (.html)
+                </button>
+                <button 
+                  onclick="window.main.exportResults('pdf')" 
+                  class="btn bg-red-600 text-white hover:bg-red-700 text-sm">
+                  📜 PDF (.pdf)
+                </button>
+              </div>
+            </div>
+            <div class="flex items-end">
+              <button 
+                onclick="window.main.startNewAnalysis()" 
+                class="btn bg-gray-500 text-white hover:bg-gray-600 whitespace-nowrap">
+                🔄 New Analysis
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     `;
@@ -416,14 +470,38 @@ class TapestrAI {
   }
   
   /**
-   * Export results to text file
+   * Export results in specified format
    */
-  exportResults() {
+  exportResults(format = 'txt') {
     if (!this.currentResults) {
       alert('No results to export');
       return;
     }
     
+    const timestamp = Date.now();
+    
+    switch(format) {
+      case 'txt':
+        this.exportAsText(timestamp);
+        break;
+      case 'md':
+        this.exportAsMarkdown(timestamp);
+        break;
+      case 'html':
+        this.exportAsHTML(timestamp);
+        break;
+      case 'pdf':
+        this.exportAsPDF(timestamp);
+        break;
+      default:
+        this.exportAsText(timestamp);
+    }
+  }
+  
+  /**
+   * Export as plain text
+   */
+  exportAsText(timestamp) {
     const primary = this.currentResults.primary;
     const additional = this.currentResults.additional || {};
     
@@ -456,14 +534,374 @@ ${primary.rawText}
       }
     }
     
-    // Download as text file
-    const blob = new Blob([exportText], { type: 'text/plain' });
+    this.downloadFile(exportText, `tapestrAI-analysis-${timestamp}.txt`, 'text/plain');
+  }
+  
+  /**
+   * Export as Markdown
+   */
+  exportAsMarkdown(timestamp) {
+    const primary = this.currentResults.primary;
+    const additional = this.currentResults.additional || {};
+    
+    let md = `# tapestrAI Artifact Analysis\n\n`;
+    md += `**Generated:** ${new Date().toLocaleString()}  \n`;
+    md += `**AI Agents Used:** ${this.currentResults.agents.join(', ')}  \n\n`;
+    md += `---\n\n`;
+    
+    md += `## Primary Analysis\n\n`;
+    md += `${primary.rawText}\n\n`;
+    
+    if (additional.cultural) {
+      md += `## Cultural Context\n\n${additional.cultural}\n\n`;
+    }
+    
+    if (additional.research) {
+      md += `## Historical Research\n\n${additional.research}\n\n`;
+    }
+    
+    if (this.currentResults.synthesis) {
+      md += `## Integrated Analysis\n\n${this.currentResults.synthesis}\n\n`;
+    }
+    
+    if (this.currentResults.factCheck) {
+      md += `## Fact Verification\n\n${this.currentResults.factCheck.verification}\n\n`;
+      if (this.currentResults.factCheck.citations && this.currentResults.factCheck.citations.length > 0) {
+        md += `### Sources\n\n`;
+        this.currentResults.factCheck.citations.forEach(url => {
+          md += `- [${url}](${url})\n`;
+        });
+        md += `\n`;
+      }
+    }
+    
+    md += `---\n\n`;
+    md += `*Generated by tapestrAI - Unravel your artifact's story*\n`;
+    
+    this.downloadFile(md, `tapestrAI-analysis-${timestamp}.md`, 'text/markdown');
+  }
+  
+  /**
+   * Export as HTML
+   */
+  exportAsHTML(timestamp) {
+    const primary = this.currentResults.primary;
+    const additional = this.currentResults.additional || {};
+    
+    let html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>tapestrAI Analysis Report</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; max-width: 900px; margin: 40px auto; padding: 20px; color: #333; }
+        h1 { color: #6B46C1; border-bottom: 3px solid #6B46C1; padding-bottom: 10px; }
+        h2 { color: #4A5568; margin-top: 30px; border-left: 4px solid #6B46C1; padding-left: 15px; }
+        .meta { background: #F7FAFC; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .section { margin: 30px 0; padding: 20px; background: white; border: 1px solid #E2E8F0; border-radius: 8px; }
+        .sources { background: #F0FFF4; padding: 15px; border-left: 4px solid #48BB78; border-radius: 4px; }
+        .sources a { color: #2B6CB0; text-decoration: none; }
+        .sources a:hover { text-decoration: underline; }
+        footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #E2E8F0; text-align: center; color: #718096; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <h1>🏛️ tapestrAI Artifact Analysis Report</h1>
+    
+    <div class="meta">
+        <strong>Generated:</strong> ${new Date().toLocaleString()}<br>
+        <strong>AI Agents Used:</strong> ${this.currentResults.agents.join(', ')}
+    </div>
+    
+    <div class="section">
+        <h2>📊 Primary Analysis</h2>
+        <p>${primary.rawText.replace(/\n/g, '<br>')}</p>
+    </div>
+`;
+    
+    if (additional.cultural) {
+      html += `
+    <div class="section">
+        <h2>🌍 Cultural Context</h2>
+        <p>${additional.cultural.replace(/\n/g, '<br>')}</p>
+    </div>`;
+    }
+    
+    if (additional.research) {
+      html += `
+    <div class="section">
+        <h2>🔍 Historical Research</h2>
+        <p>${additional.research.replace(/\n/g, '<br>')}</p>
+    </div>`;
+    }
+    
+    if (this.currentResults.synthesis) {
+      html += `
+    <div class="section">
+        <h2>🎯 Integrated Analysis</h2>
+        <p>${this.currentResults.synthesis.replace(/\n/g, '<br>')}</p>
+    </div>`;
+    }
+    
+    if (this.currentResults.factCheck) {
+      html += `
+    <div class="section">
+        <h2>✓ Fact Verification</h2>
+        <p>${this.currentResults.factCheck.verification.replace(/\n/g, '<br>')}</p>`;
+      
+      if (this.currentResults.factCheck.citations && this.currentResults.factCheck.citations.length > 0) {
+        html += `
+        <div class="sources">
+            <strong>📚 Sources:</strong><br>`;
+        this.currentResults.factCheck.citations.forEach(url => {
+          html += `<a href="${url}" target="_blank">${url}</a><br>`;
+        });
+        html += `
+        </div>`;
+      }
+      html += `
+    </div>`;
+    }
+    
+    html += `
+    <footer>
+        <p>Generated by <strong>tapestrAI</strong> - Unravel your artifact's story</p>
+    </footer>
+</body>
+</html>`;
+    
+    this.downloadFile(html, `tapestrAI-analysis-${timestamp}.html`, 'text/html');
+  }
+  
+  /**
+   * Export as PDF (using browser print dialog)
+   */
+  exportAsPDF(timestamp) {
+    // Create a styled HTML version and open in new window for printing
+    const html = this.generatePDFHTML();
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(html);
+    printWindow.document.close();
+    
+    // Wait for content to load then trigger print
+    printWindow.onload = function() {
+      printWindow.print();
+    };
+    
+    // Show instructions
+    this.showNotification('info', 'PDF export: Please use "Save as PDF" in the print dialog.');
+  }
+  
+  /**
+   * Generate HTML for PDF export
+   */
+  generatePDFHTML() {
+    const primary = this.currentResults.primary;
+    const additional = this.currentResults.additional || {};
+    
+    return `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>tapestrAI Analysis Report</title>
+    <style>
+        @media print {
+            body { margin: 0; }
+            .page-break { page-break-before: always; }
+        }
+        body { font-family: Georgia, serif; line-height: 1.8; padding: 40px; max-width: 800px; margin: 0 auto; }
+        h1 { color: #6B46C1; font-size: 28px; margin-bottom: 10px; }
+        h2 { color: #4A5568; font-size: 20px; margin-top: 30px; border-bottom: 2px solid #E2E8F0; padding-bottom: 8px; }
+        .meta { background: #F7FAFC; padding: 15px; border-radius: 5px; margin: 20px 0; font-size: 14px; }
+        p { margin: 15px 0; }
+        .section { margin: 25px 0; }
+        .sources { margin-top: 15px; padding: 15px; background: #F0FFF4; border-left: 3px solid #48BB78; }
+        .sources a { color: #2B6CB0; }
+    </style>
+</head>
+<body>
+    <h1>tapestrAI Artifact Analysis Report</h1>
+    <div class="meta">
+        <strong>Generated:</strong> ${new Date().toLocaleString()}<br>
+        <strong>AI Agents:</strong> ${this.currentResults.agents.join(', ')}
+    </div>
+    
+    <div class="section">
+        <h2>Primary Analysis</h2>
+        <p>${primary.rawText.replace(/\n/g, '<br>')}</p>
+    </div>
+    
+    ${additional.cultural ? `
+    <div class="section page-break">
+        <h2>Cultural Context</h2>
+        <p>${additional.cultural.replace(/\n/g, '<br>')}</p>
+    </div>` : ''}
+    
+    ${additional.research ? `
+    <div class="section">
+        <h2>Historical Research</h2>
+        <p>${additional.research.replace(/\n/g, '<br>')}</p>
+    </div>` : ''}
+    
+    ${this.currentResults.synthesis ? `
+    <div class="section">
+        <h2>Integrated Analysis</h2>
+        <p>${this.currentResults.synthesis.replace(/\n/g, '<br>')}</p>
+    </div>` : ''}
+    
+    ${this.currentResults.factCheck ? `
+    <div class="section">
+        <h2>Fact Verification</h2>
+        <p>${this.currentResults.factCheck.verification.replace(/\n/g, '<br>')}</p>
+        ${this.currentResults.factCheck.citations && this.currentResults.factCheck.citations.length > 0 ? `
+        <div class="sources">
+            <strong>Sources:</strong><br>
+            ${this.currentResults.factCheck.citations.map(url => `<a href="${url}">${url}</a><br>`).join('')}
+        </div>` : ''}
+    </div>` : ''}
+</body>
+</html>`;
+  }
+  
+  /**
+   * Download file helper
+   */
+  downloadFile(content, filename, mimeType) {
+    const blob = new Blob([content], { type: mimeType });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `tapestrAI-analysis-${Date.now()}.txt`;
+    a.download = filename;
     a.click();
     window.URL.revokeObjectURL(url);
+  }
+  
+  /**
+   * Submit follow-up question
+   */
+  async submitFollowupQuestion() {
+    const textarea = document.getElementById('followup-question');
+    const question = textarea ? textarea.value.trim() : '';
+    
+    if (!question) {
+      alert('Please enter a question.');
+      return;
+    }
+    
+    if (!this.currentResults) {
+      alert('No analysis results available.');
+      return;
+    }
+    
+    try {
+      // Show loading state
+      const button = event.target;
+      const originalText = button.textContent;
+      button.disabled = true;
+      button.textContent = '⏳ Processing...';
+      
+      // Get the primary agent (Gemini) to answer the follow-up
+      const images = this.imageProcessor.getImages();
+      const analysisContext = this.currentResults.primary.rawText;
+      
+      const prompt = `Based on this artifact analysis:\n\n${analysisContext}\n\nThe user has a follow-up question:\n${question}\n\nPlease provide a detailed answer based on the analysis and images.`;
+      
+      // Use Gemini for follow-up (primary agent)
+      const response = await this.agentOrchestrator.askFollowup(
+        images,
+        prompt,
+        this.apiKeyManager
+      );
+      
+      // Display follow-up response
+      this.displayFollowupResponse(question, response);
+      
+      // Clear textarea
+      textarea.value = '';
+      
+      // Reset button
+      button.disabled = false;
+      button.textContent = originalText;
+      
+    } catch (error) {
+      console.error('Follow-up question failed:', error);
+      alert('Failed to process follow-up question. Please try again.');
+      
+      // Reset button
+      const button = event.target;
+      button.disabled = false;
+      button.textContent = '❓ Ask Follow-up Question';
+    }
+  }
+  
+  /**
+   * Display follow-up response
+   */
+  displayFollowupResponse(question, response) {
+    const resultsSection = document.getElementById('results-section');
+    if (!resultsSection) return;
+    
+    // Find the follow-up section or create one
+    let followupSection = document.getElementById('followup-responses');
+    if (!followupSection) {
+      const followupContainer = resultsSection.querySelector('.bg-gradient-to-br.from-blue-50');
+      if (followupContainer && followupContainer.parentElement) {
+        followupSection = document.createElement('div');
+        followupSection.id = 'followup-responses';
+        followupSection.className = 'mt-4 space-y-3';
+        followupContainer.parentElement.insertBefore(followupSection, followupContainer);
+      }
+    }
+    
+    if (followupSection) {
+      const responseHTML = `
+        <div class="bg-white border-l-4 border-blue-500 rounded-lg p-4 shadow-sm">
+          <div class="mb-2">
+            <span class="text-xs font-semibold text-gray-500 uppercase">Your Question:</span>
+            <p class="text-sm font-medium text-gray-800 mt-1">${this.escapeHtml(question)}</p>
+          </div>
+          <div class="mt-3 pt-3 border-t border-gray-200">
+            <span class="text-xs font-semibold text-gray-500 uppercase">Answer:</span>
+            <div class="text-sm text-gray-700 mt-1 prose max-w-none">${this.formatText(response)}</div>
+          </div>
+        </div>
+      `;
+      followupSection.insertAdjacentHTML('afterbegin', responseHTML);
+    }
+  }
+  
+  /**
+   * Add more photos to existing analysis
+   */
+  addMorePhotos() {
+    // Scroll to upload section
+    const uploadSection = document.getElementById('upload-section');
+    if (uploadSection) {
+      uploadSection.scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    // Show notification
+    this.showNotification('info', 'Upload additional photos, then click "Analyze Artifact" to update the analysis.');
+  }
+  
+  /**
+   * Show notification
+   */
+  showNotification(type, message) {
+    // Use existing notification system from apiKeyManager
+    if (this.apiKeyManager) {
+      this.apiKeyManager.showNotification(type, message);
+    }
+  }
+  
+  /**
+   * Escape HTML to prevent XSS
+   */
+  escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
   }
   
   /**
