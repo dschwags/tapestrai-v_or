@@ -204,9 +204,8 @@ class APIKeyManager {
         this.showNotification('success', 
           `✓ ${this.providers[provider].name} connected successfully!`);
         
-        // Clear the input field after successful save
-        const input = document.getElementById(`${provider}-key-input`);
-        if (input) input.value = '';
+        // Keep the key visible in the input field (don't clear it)
+        // User can now see their saved key when reopening the section
         
         this.updateAvailableFeatures();
         
@@ -604,10 +603,22 @@ class APIKeyManager {
     Object.keys(this.providers).forEach(provider => {
       if (this.keys[provider]) {
         this.updateStatus(provider, 'active');
+        // Populate the input field with the saved key
+        this.populateKeyInput(provider);
       }
     });
     
     this.updateAvailableFeatures();
+  }
+  
+  /**
+   * Populate input field with saved API key
+   */
+  populateKeyInput(provider) {
+    const input = document.getElementById(`${provider}-key-input`);
+    if (input && this.keys[provider]) {
+      input.value = this.keys[provider];
+    }
   }
 }
 

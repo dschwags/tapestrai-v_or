@@ -129,14 +129,11 @@ class TapestrAI {
   
   /**
    * Check if API setup should auto-minimize
+   * Note: Disabled - let user manually close the section
    */
   checkAPISetupMinimize() {
-    if (this.apiKeyManager.canAnalyze()) {
-      const container = document.getElementById('api-setup-container');
-      if (container && !container.classList.contains('minimized')) {
-        this.toggleAPISetup();
-      }
-    }
+    // Removed auto-close behavior - user can close the section manually
+    // This allows them to see their saved keys and add more if needed
   }
   
   /**
