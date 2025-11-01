@@ -281,6 +281,98 @@ class ImageProcessor {
       this.images.map(img => this.imageToBase64(img))
     );
   }
+  
+  /**
+   * Generate compressed images for export (smaller size for embedding in documents)
+   * Returns array of compressed data URLs suitable for PDF/HTML/MD export
+   */
+  async getCompressedImagesForExport() {
+    const exportImages = [];
+    
+    for (const img of this.images) {
+      try {
+        const compressed = await this.compressForExport(img.data);
+        exportImages.push({
+          name: img.name,
+          data: compressed.dataUrl,
+          width: compressed.width,
+          height: compressed.height,
+          size: compressed.size
+        });
+      } catch (error) {
+        console.error(`Failed to compress ${img.name} for export:`, error);
+        // Fallback to original if compression fails
+        exportImages.push({
+          name: img.name,
+          data: img.data,
+          width: img.width,
+          height: img.height,
+          size: img.compressedSize
+        });
+      }
+    }
+    
+    return exportImages;
+  }
+  
+  /**
+   * Compress image specifically for export (smaller dimensions and size)
+   */
+  async compressForExport(dataUrl) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Calculate dimensions (max 800px on longest side for exports)
+        let width = img.width;
+        let height = img.height;
+        const maxDimension = 800;
+        
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = (height / width) * maxDimension;
+            width = maxDimension;
+          } else {
+            width = (width / height) * maxDimension;
+            height = maxDimension;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Draw image
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Compress to lower quality for smaller file size (max ~500KB per image)
+        let quality = 0.7;
+        let compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+        let size = this.dataUrlToSize(compressedDataUrl);
+        const maxSizeBytes = 500 * 1024; // 500KB target
+        
+        // Reduce quality until under target size
+        while (size > maxSizeBytes && quality > 0.3) {
+          quality -= 0.1;
+          compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+          size = this.dataUrlToSize(compressedDataUrl);
+        }
+        
+        resolve({
+          dataUrl: compressedDataUrl,
+          size,
+          width: Math.round(width),
+          height: Math.round(height),
+          quality
+        });
+      };
+      
+      img.onerror = () => reject(new Error('Failed to load image for export compression'));
+      img.src = dataUrl;
+    });
+  }
 }
 
 // Create global instance

@@ -136,12 +136,16 @@ class AgentOrchestrator {
         }
       }
       
+      // Generate research links for further learning
+      const researchLinks = this.generateResearchLinks(primaryAnalysis);
+      
       // Combine all results
       const finalResult = {
         primary: primaryAnalysis,
         synthesis: needsSynthesis ? finalAnalysis : null,
         factCheck: factCheck,
         additional: additionalResults,
+        researchLinks: researchLinks,
         agents: agents.map(a => a.name),
         timestamp: new Date().toISOString(),
         imageCount: images.length
@@ -724,6 +728,94 @@ Focus on factual accuracy, not opinions.`;
     }
     
     return data.candidates[0].content.parts[0].text;
+  }
+  
+  /**
+   * Generate suggested research links for further learning
+   * Creates links to Wikipedia, Google Scholar, and museum databases
+   */
+  generateResearchLinks(primaryAnalysis) {
+    const links = [];
+    
+    // Extract key terms from keywords and category
+    const keywords = primaryAnalysis.keywords || [];
+    const category = primaryAnalysis.category || '';
+    
+    // Build search terms
+    const searchTerms = [];
+    
+    // Add category if available
+    if (category && category.trim()) {
+      searchTerms.push(category.trim());
+    }
+    
+    // Add top 3 keywords
+    keywords.slice(0, 3).forEach(kw => {
+      if (kw && kw.trim()) {
+        searchTerms.push(kw.trim());
+      }
+    });
+    
+    // If no terms, use generic artifact search
+    if (searchTerms.length === 0) {
+      searchTerms.push('historical artifact');
+    }
+    
+    // Generate Wikipedia link
+    const wikiTerm = searchTerms[0].replace(/\s+/g, '_');
+    links.push({
+      title: `Wikipedia: ${searchTerms[0]}`,
+      url: `https://en.wikipedia.org/wiki/${encodeURIComponent(wikiTerm)}`,
+      description: 'General encyclopedia information',
+      icon: '📖'
+    });
+    
+    // Generate Google Scholar link
+    const scholarQuery = searchTerms.slice(0, 2).join(' ');
+    links.push({
+      title: `Google Scholar: Research Papers`,
+      url: `https://scholar.google.com/scholar?q=${encodeURIComponent(scholarQuery)}`,
+      description: 'Academic research and publications',
+      icon: '🎓'
+    });
+    
+    // Generate Smithsonian link
+    const smithsonianQuery = searchTerms.slice(0, 2).join(' ');
+    links.push({
+      title: `Smithsonian Collections`,
+      url: `https://collections.si.edu/search/results.htm?q=${encodeURIComponent(smithsonianQuery)}`,
+      description: 'Museum artifacts and collections',
+      icon: '🏛️'
+    });
+    
+    // Generate Google Arts & Culture link
+    const artsQuery = searchTerms[0];
+    links.push({
+      title: `Google Arts & Culture`,
+      url: `https://artsandculture.google.com/search?q=${encodeURIComponent(artsQuery)}`,
+      description: 'Virtual museum tours and exhibits',
+      icon: '🎨'
+    });
+    
+    // Generate Met Museum link
+    const metQuery = searchTerms.slice(0, 2).join(' ');
+    links.push({
+      title: `The Metropolitan Museum of Art`,
+      url: `https://www.metmuseum.org/art/collection/search#!?q=${encodeURIComponent(metQuery)}`,
+      description: 'Metropolitan Museum collections',
+      icon: '🏺'
+    });
+    
+    // Generate general Google search link
+    const googleQuery = searchTerms.join(' ') + ' history';
+    links.push({
+      title: `Google Search: ${searchTerms[0]}`,
+      url: `https://www.google.com/search?q=${encodeURIComponent(googleQuery)}`,
+      description: 'General web search',
+      icon: '🔍'
+    });
+    
+    return links;
   }
 }
 

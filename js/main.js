@@ -368,6 +368,37 @@ class TapestrAI {
           </div>
         ` : ''}
         
+        <!-- Research Links for Further Learning -->
+        ${results.researchLinks && results.researchLinks.length > 0 ? `
+          <div class="mt-6 pt-6 border-t">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-2xl">🔗</span>
+              <h3 class="text-lg font-bold text-gray-900">Suggested Resources for Further Research</h3>
+            </div>
+            <div class="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg p-4">
+              <p class="text-sm text-gray-700 mb-3">
+                <strong>Want to learn more?</strong> These curated links will help you verify information and explore this artifact's history in greater depth.
+              </p>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                ${results.researchLinks.map(link => `
+                  <a href="${link.url}" target="_blank" rel="noopener noreferrer" 
+                     class="flex items-start gap-3 p-3 bg-white hover:bg-gray-50 rounded-lg border border-orange-200 hover:border-orange-400 transition-colors">
+                    <span class="text-2xl flex-shrink-0">${link.icon}</span>
+                    <div class="flex-1 min-w-0">
+                      <div class="font-semibold text-gray-900 text-sm">${link.title}</div>
+                      <div class="text-xs text-gray-600 mt-1">${link.description}</div>
+                    </div>
+                    <span class="text-orange-500 text-sm flex-shrink-0">↗</span>
+                  </a>
+                `).join('')}
+              </div>
+              <p class="text-xs text-gray-600 mt-3 italic">
+                💡 Tip: Cross-reference multiple sources to verify information and gain deeper understanding.
+              </p>
+            </div>
+          </div>
+        ` : ''}
+        
         <!-- Follow-up Questions Section -->
         <div class="mt-6 pt-6 border-t">
           <h3 class="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
@@ -508,13 +539,28 @@ class TapestrAI {
     const primary = this.currentResults.primary;
     const additional = this.currentResults.additional || {};
     
+    // Get image count
+    const imageCount = this.imageProcessor.getCount();
+    
     let exportText = `TAPESTRAI ARTIFACT ANALYSIS
 Generated: ${new Date().toLocaleString()}
 Agents Used: ${this.currentResults.agents.join(', ')}
+${imageCount > 0 ? `Images Analyzed: ${imageCount}` : ''}
 
 ==========================================
 
-${primary.rawText}
+`;
+    
+    if (imageCount > 0) {
+      exportText += `NOTE: This text export does not include images.
+For exports with embedded images, use HTML, Markdown, or PDF format.
+
+==========================================
+
+`;
+    }
+    
+    exportText += `${primary.rawText}
 
 `;
     
@@ -537,20 +583,44 @@ ${primary.rawText}
       }
     }
     
+    // Add research links
+    if (this.currentResults.researchLinks && this.currentResults.researchLinks.length > 0) {
+      exportText += `\n\n=== SUGGESTED RESOURCES FOR FURTHER RESEARCH ===\n\n`;
+      exportText += `These curated links will help you verify information and explore this artifact's history in greater depth:\n\n`;
+      this.currentResults.researchLinks.forEach(link => {
+        exportText += `${link.icon} ${link.title}\n`;
+        exportText += `   ${link.url}\n`;
+        exportText += `   ${link.description}\n\n`;
+      });
+    }
+    
     this.downloadFile(exportText, `tapestrAI-analysis-${timestamp}.txt`, 'text/plain');
   }
   
   /**
    * Export as Markdown
    */
-  exportAsMarkdown(timestamp) {
+  async exportAsMarkdown(timestamp) {
     const primary = this.currentResults.primary;
     const additional = this.currentResults.additional || {};
+    
+    // Get compressed images for export
+    const exportImages = await this.imageProcessor.getCompressedImagesForExport();
     
     let md = `# tapestrAI Artifact Analysis\n\n`;
     md += `**Generated:** ${new Date().toLocaleString()}  \n`;
     md += `**AI Agents Used:** ${this.currentResults.agents.join(', ')}  \n\n`;
     md += `---\n\n`;
+    
+    // Add images section if there are any
+    if (exportImages.length > 0) {
+      md += `## 📷 Analyzed Artifacts\n\n`;
+      exportImages.forEach(img => {
+        md += `![${img.name}](${img.data})\n\n`;
+        md += `*${img.name} (${img.width}×${img.height})*\n\n`;
+      });
+      md += `---\n\n`;
+    }
     
     md += `## Primary Analysis\n\n`;
     md += `${primary.rawText}\n\n`;
@@ -578,6 +648,16 @@ ${primary.rawText}
       }
     }
     
+    // Add research links
+    if (this.currentResults.researchLinks && this.currentResults.researchLinks.length > 0) {
+      md += `## Suggested Resources for Further Research\n\n`;
+      md += `These curated links will help you verify information and explore this artifact's history in greater depth:\n\n`;
+      this.currentResults.researchLinks.forEach(link => {
+        md += `- ${link.icon} **[${link.title}](${link.url})**\n  ${link.description}\n`;
+      });
+      md += `\n💡 *Tip: Cross-reference multiple sources to verify information and gain deeper understanding.*\n\n`;
+    }
+    
     md += `---\n\n`;
     md += `*Generated by tapestrAI - Unravel your artifact's story*\n`;
     
@@ -587,9 +667,12 @@ ${primary.rawText}
   /**
    * Export as HTML
    */
-  exportAsHTML(timestamp) {
+  async exportAsHTML(timestamp) {
     const primary = this.currentResults.primary;
     const additional = this.currentResults.additional || {};
+    
+    // Get compressed images for export
+    const exportImages = await this.imageProcessor.getCompressedImagesForExport();
     
     let html = `<!DOCTYPE html>
 <html lang="en">
@@ -606,6 +689,10 @@ ${primary.rawText}
         .sources { background: #F0FFF4; padding: 15px; border-left: 4px solid #48BB78; border-radius: 4px; }
         .sources a { color: #2B6CB0; text-decoration: none; }
         .sources a:hover { text-decoration: underline; }
+        .images-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 20px 0; }
+        .image-item { text-align: center; }
+        .image-item img { max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .image-caption { font-size: 12px; color: #718096; margin-top: 8px; }
         footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #E2E8F0; text-align: center; color: #718096; font-size: 14px; }
     </style>
 </head>
@@ -615,8 +702,29 @@ ${primary.rawText}
     <div class="meta">
         <strong>Generated:</strong> ${new Date().toLocaleString()}<br>
         <strong>AI Agents Used:</strong> ${this.currentResults.agents.join(', ')}
-    </div>
+    </div>`;
     
+    // Add images section if there are any
+    if (exportImages.length > 0) {
+      html += `
+    <div class="section">
+        <h2>📷 Analyzed Artifacts</h2>
+        <div class="images-grid">`;
+      
+      exportImages.forEach(img => {
+        html += `
+          <div class="image-item">
+            <img src="${img.data}" alt="${img.name}">
+            <div class="image-caption">${img.name} (${img.width}×${img.height})</div>
+          </div>`;
+      });
+      
+      html += `
+        </div>
+    </div>`;
+    }
+    
+    html += `
     <div class="section">
         <h2>📊 Primary Analysis</h2>
         <p>${primary.rawText.replace(/\n/g, '<br>')}</p>
@@ -667,6 +775,30 @@ ${primary.rawText}
     </div>`;
     }
     
+    // Add research links
+    if (this.currentResults.researchLinks && this.currentResults.researchLinks.length > 0) {
+      html += `
+    <div class="section" style="background: linear-gradient(135deg, #FFFBEB 0%, #FED7AA 100%); border-color: #FB923C;">
+        <h2>🔗 Suggested Resources for Further Research</h2>
+        <p><strong>Want to learn more?</strong> These curated links will help you verify information and explore this artifact's history in greater depth.</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 15px;">`;
+      
+      this.currentResults.researchLinks.forEach(link => {
+        html += `
+          <div style="background: white; padding: 12px; border-radius: 8px; border: 2px solid #FDBA74;">
+            <div style="font-weight: 600; margin-bottom: 5px;">${link.icon} <a href="${link.url}" target="_blank" style="color: #EA580C;">${link.title}</a></div>
+            <div style="font-size: 12px; color: #6B7280;">${link.description}</div>
+          </div>`;
+      });
+      
+      html += `
+        </div>
+        <p style="font-size: 12px; font-style: italic; color: #6B7280; margin-top: 15px;">
+          💡 Tip: Cross-reference multiple sources to verify information and gain deeper understanding.
+        </p>
+    </div>`;
+    }
+    
     html += `
     <footer>
         <p>Generated by <strong>tapestrAI</strong> - Unravel your artifact's story</p>
@@ -680,9 +812,9 @@ ${primary.rawText}
   /**
    * Export as PDF (using browser print dialog)
    */
-  exportAsPDF(timestamp) {
+  async exportAsPDF(timestamp) {
     // Create a styled HTML version and open in new window for printing
-    const html = this.generatePDFHTML();
+    const html = await this.generatePDFHTML();
     const printWindow = window.open('', '_blank');
     printWindow.document.write(html);
     printWindow.document.close();
@@ -699,11 +831,14 @@ ${primary.rawText}
   /**
    * Generate HTML for PDF export
    */
-  generatePDFHTML() {
+  async generatePDFHTML() {
     const primary = this.currentResults.primary;
     const additional = this.currentResults.additional || {};
     
-    return `<!DOCTYPE html>
+    // Get compressed images for export
+    const exportImages = await this.imageProcessor.getCompressedImagesForExport();
+    
+    let html = `<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -721,6 +856,10 @@ ${primary.rawText}
         .section { margin: 25px 0; }
         .sources { margin-top: 15px; padding: 15px; background: #F0FFF4; border-left: 3px solid #48BB78; }
         .sources a { color: #2B6CB0; }
+        .images-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 20px 0; }
+        .image-item { text-align: center; page-break-inside: avoid; }
+        .image-item img { max-width: 100%; height: auto; border: 1px solid #E2E8F0; border-radius: 5px; }
+        .image-caption { font-size: 11px; color: #718096; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -728,8 +867,29 @@ ${primary.rawText}
     <div class="meta">
         <strong>Generated:</strong> ${new Date().toLocaleString()}<br>
         <strong>AI Agents:</strong> ${this.currentResults.agents.join(', ')}
-    </div>
+    </div>`;
     
+    // Add images section if there are any
+    if (exportImages.length > 0) {
+      html += `
+    <div class="section">
+        <h2>Analyzed Artifacts</h2>
+        <div class="images-grid">`;
+      
+      exportImages.forEach(img => {
+        html += `
+          <div class="image-item">
+            <img src="${img.data}" alt="${img.name}">
+            <div class="image-caption">${img.name} (${img.width}×${img.height})</div>
+          </div>`;
+      });
+      
+      html += `
+        </div>
+    </div>`;
+    }
+    
+    html += `
     <div class="section">
         <h2>Primary Analysis</h2>
         <p>${primary.rawText.replace(/\n/g, '<br>')}</p>
@@ -765,6 +925,8 @@ ${primary.rawText}
     </div>` : ''}
 </body>
 </html>`;
+    
+    return html;
   }
   
   /**
