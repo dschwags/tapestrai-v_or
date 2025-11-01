@@ -204,9 +204,13 @@ class APIKeyManager {
         this.showNotification('success', 
           `✓ ${this.providers[provider].name} connected successfully!`);
         
-        // Clear the input field after successful save
+        // Show masked key in input field instead of clearing it
         const input = document.getElementById(`${provider}-key-input`);
-        if (input) input.value = '';
+        if (input) {
+          input.value = this.maskKey(key.trim());
+          input.setAttribute('data-masked', 'true');
+          input.setAttribute('data-has-key', 'true');
+        }
         
         this.updateAvailableFeatures();
         
@@ -399,6 +403,20 @@ class APIKeyManager {
     localStorage.removeItem(`tapestrAI_key_${provider}`);
     delete this.keys[provider];
     this.updateStatus(provider, 'missing');
+    
+    // Clear input field
+    const input = document.getElementById(`${provider}-key-input`);
+    if (input) {
+      input.value = '';
+      input.removeAttribute('data-masked');
+      input.removeAttribute('data-has-key');
+      const config = this.providers[provider];
+      input.placeholder = config.name === 'Google Gemini' ? 'AIza...' : 
+                          config.name === 'OpenAI' ? 'sk-...' :
+                          config.name === 'Anthropic Claude' ? 'sk-ant-...' :
+                          config.name === 'Perplexity AI' ? 'pplx-...' :
+                          config.name === 'DeepSeek' ? 'sk-...' : '';
+    }
     
     this.showNotification('info', 
       `${this.providers[provider].name} disconnected`);
@@ -598,6 +616,53 @@ class APIKeyManager {
   }
   
   /**
+   * Mask API key for display (show first 8 and last 4 characters)
+   */
+  maskKey(key) {
+    if (!key || key.length < 12) return '••••••••••••';
+    const start = key.substring(0, 8);
+    const end = key.substring(key.length - 4);
+    const middle = '•'.repeat(Math.max(12, key.length - 12));
+    return `${start}${middle}${end}`;
+  }
+  
+  /**
+   * Handle input field focus - clear masked key to allow new entry
+   */
+  handleKeyInputFocus(provider) {
+    const input = document.getElementById(`${provider}-key-input`);
+    if (!input) return;
+    
+    const isMasked = input.getAttribute('data-masked') === 'true';
+    if (isMasked) {
+      input.value = '';
+      input.removeAttribute('data-masked');
+      input.placeholder = 'Enter new API key or leave blank to keep existing';
+    }
+  }
+  
+  /**
+   * Handle input field blur - restore masked key if user didn't enter anything
+   */
+  handleKeyInputBlur(provider) {
+    const input = document.getElementById(`${provider}-key-input`);
+    if (!input) return;
+    
+    const hasKey = input.getAttribute('data-has-key') === 'true';
+    if (hasKey && input.value.trim() === '') {
+      // Restore masked key if user left field empty
+      input.value = this.maskKey(this.keys[provider]);
+      input.setAttribute('data-masked', 'true');
+      const config = this.providers[provider];
+      input.placeholder = config.name === 'Google Gemini' ? 'AIza...' : 
+                          config.name === 'OpenAI' ? 'sk-...' :
+                          config.name === 'Anthropic Claude' ? 'sk-ant-...' :
+                          config.name === 'Perplexity AI' ? 'pplx-...' :
+                          config.name === 'DeepSeek' ? 'sk-...' : '';
+    }
+  }
+  
+  /**
    * Initialize UI - call after DOM is loaded
    */
   initializeUI() {
@@ -605,6 +670,14 @@ class APIKeyManager {
     Object.keys(this.providers).forEach(provider => {
       if (this.keys[provider]) {
         this.updateStatus(provider, 'active');
+        
+        // Populate input field with masked key
+        const input = document.getElementById(`${provider}-key-input`);
+        if (input) {
+          input.value = this.maskKey(this.keys[provider]);
+          input.setAttribute('data-masked', 'true');
+          input.setAttribute('data-has-key', 'true');
+        }
       }
     });
     

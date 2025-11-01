@@ -67,7 +67,8 @@ class TapestrAI {
     // Listen for API key updates
     window.addEventListener('apiKeyUpdated', () => {
       this.updateAnalyzeButtonState();
-      this.checkAPISetupMinimize();
+      // Don't auto-close API setup section - let user close it manually
+      // this.checkAPISetupMinimize();
     });
     
     // Listen for image updates
@@ -85,12 +86,14 @@ class TapestrAI {
       const content = document.getElementById('api-setup-content');
       const minimizedMsg = document.getElementById('api-setup-minimized');
       const skipOption = document.getElementById('skip-api-option');
+      const arrow = document.getElementById('minimize-api-setup');
       
       if (container && content && minimizedMsg) {
         container.classList.add('minimized');
         content.classList.add('hidden');
         minimizedMsg.classList.remove('hidden');
         if (skipOption) skipOption.style.display = 'none';
+        if (arrow) arrow.classList.remove('rotate-90');
       }
     }
   }
@@ -102,6 +105,7 @@ class TapestrAI {
     const container = document.getElementById('api-setup-container');
     const content = document.getElementById('api-setup-content');
     const minimizedMsg = document.getElementById('api-setup-minimized');
+    const arrow = document.getElementById('minimize-api-setup');
     
     if (container && content && minimizedMsg) {
       const isMinimized = container.classList.contains('minimized');
@@ -111,11 +115,13 @@ class TapestrAI {
         container.classList.remove('minimized');
         content.classList.remove('hidden');
         minimizedMsg.classList.add('hidden');
+        if (arrow) arrow.classList.add('rotate-90');
       } else {
         // Minimize
         container.classList.add('minimized');
         content.classList.add('hidden');
         minimizedMsg.classList.remove('hidden');
+        if (arrow) arrow.classList.remove('rotate-90');
       }
     }
   }
