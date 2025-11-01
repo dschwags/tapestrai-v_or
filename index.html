@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>tapestrAI - Unravel your artifact's story</title>
-    <!-- Version: 3.2.0 - Unique Shapes & Better Status | Build: 2025-11-01 10:47 EDT>
+    <!-- Version: 3.3.0 - Follow-up Questions & Multi-Format Export | Build: 2025-11-01 11:36 EDT>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -38,7 +38,7 @@
                 <div class="h-3 w-px bg-gray-300 hidden sm:block"></div>
                 <div class="flex items-center gap-2">
                     <span class="text-xs sm:text-sm text-gray-600">Analysis:</span>
-                    <span id="analysis-level-display" class="text-xs sm:text-sm font-semibold">No Analysis</span>
+                    <span id="analysis-level-display" class="text-xs sm:text-sm font-semibold">Not Configured</span>
                 </div>
             </div>
             <div id="api-quick-status" class="flex items-center gap-1 sm:gap-2 flex-wrap" title="Click to expand API configuration">
@@ -89,21 +89,64 @@
                     title="Click to expand/collapse">
                     <div class="flex items-center gap-3">
                         <span class="text-2xl">🔑</span>
-                        <h2 id="setup-title" class="text-xl font-bold text-gray-900">Configure Your AI Research Team</h2>
+                        <h2 id="setup-title" class="text-xl font-bold text-gray-900">Quick Start & Configure Your tapestrAI Research Team</h2>
                     </div>
                     <span 
                         id="minimize-api-setup" 
-                        class="text-2xl opacity-50 group-hover:opacity-100 transition-opacity">
-                        ▼
+                        class="text-2xl opacity-50 group-hover:opacity-100 transition-opacity rotate-90">
+                        ❯
                     </span>
                 </button>
                 
                 <!-- Minimized Message -->
                 <div id="api-setup-minimized" class="hidden text-sm text-gray-600">
-                    API keys configured ✓ Click above to manage
+                    API keys configured ✓ Click above to manage or view Quick Start Guide
                 </div>
 
                 <div id="api-setup-content">
+                    <!-- Quick Start Guide (Now at the top) -->
+                    <div class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-4 mb-6">
+                        <button 
+                            onclick="toggleQuickStart()" 
+                            class="w-full text-left flex items-center justify-between hover:opacity-80 transition-opacity mb-3">
+                            <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                                <span>📚</span>
+                                Quick Start Guide
+                            </h3>
+                            <span id="quickstart-icon" class="text-gray-600">❯</span>
+                        </button>
+                        
+                        <div id="quickstart-content" class="hidden">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div class="bg-white/80 rounded-lg p-3">
+                                <div class="font-bold text-brand mb-1">1. Add API Keys</div>
+                                <p class="text-sm text-gray-600">At least Gemini required. More keys = deeper analysis.</p>
+                            </div>
+                            
+                            <div class="bg-white/80 rounded-lg p-3">
+                                <div class="font-bold text-brand mb-1">2. Upload Photos</div>
+                                <p class="text-sm text-gray-600">Clear, well-lit images of your artifact. Multiple angles help!</p>
+                            </div>
+                            
+                            <div class="bg-white/80 rounded-lg p-3">
+                                <div class="font-bold text-brand mb-1">3. Start Analysis</div>
+                                <p class="text-sm text-gray-600">AI agents examine material, context, and history.</p>
+                            </div>
+                            
+                            <div class="bg-white/80 rounded-lg p-3">
+                                <div class="font-bold text-brand mb-1">4. Review Results</div>
+                                <p class="text-sm text-gray-600">Get comprehensive insights with cost breakdown.</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-3 text-center">
+                            <a href="docs/getting-started.md" target="_blank" class="text-sm text-blue-600 hover:underline font-medium">
+                                Full Documentation →
+                            </a>
+                        </div>
+                        </div>
+                        <!-- End quickstart-content -->
+                    </div>
                     <p class="text-gray-600 mb-4">Add API keys to unlock more powerful analysis. <em>Gemini is required to begin.</em></p>
 
                     <!-- Why Your Own API Keys? (Collapsible Explanation) -->
@@ -115,7 +158,7 @@
                                 <span>💡</span>
                                 <span>Why do I need to provide my own API keys?</span>
                             </span>
-                            <span id="explanation-icon" class="text-blue-600">▼</span>
+                            <span id="explanation-icon" class="text-blue-600">❯</span>
                         </button>
                         <div id="explanation-content" class="hidden px-4 pb-4 text-sm text-gray-700 leading-relaxed">
                             <p class="mb-3">
@@ -136,35 +179,6 @@
                         </div>
                     </div>
 
-                    <!-- Quick Start Guide -->                    <div class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-4 mb-6">
-                        <h3 class="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
-                            <span>📚</span>
-                            Quick Start Guide
-                        </h3>
-                        
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div class="bg-white/80 rounded-lg p-3">
-                                <div class="font-bold text-brand mb-1 text-sm">1. Add API Keys</div>
-                                <p class="text-xs text-gray-600">At least Gemini required. More keys = deeper analysis.</p>
-                            </div>
-                            
-                            <div class="bg-white/80 rounded-lg p-3">
-                                <div class="font-bold text-brand mb-1 text-sm">2. Upload Photos</div>
-                                <p class="text-xs text-gray-600">Clear, well-lit images of your artifact. Multiple angles help!</p>
-                            </div>
-                            
-                            <div class="bg-white/80 rounded-lg p-3">
-                                <div class="font-bold text-brand mb-1 text-sm">3. Start Analysis</div>
-                                <p class="text-xs text-gray-600">AI agents examine material, context, and history.</p>
-                            </div>
-                            
-                            <div class="bg-white/80 rounded-lg p-3">
-                                <div class="font-bold text-brand mb-1 text-sm">4. Review Results</div>
-                                <p class="text-xs text-gray-600">Get comprehensive insights with cost breakdown.</p>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Token Usage Tracker (Collapsible) -->
                     <div id="token-tracker-container" class="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg px-4 py-3 mb-6">
                         <button onclick="toggleTokenTracker()" class="w-full flex items-center justify-between hover:opacity-80 transition-opacity">
@@ -172,7 +186,7 @@
                                 <span class="text-base">📊</span>
                                 <span class="text-sm font-semibold text-gray-800">Token Usage & Session Stats</span>
                             </div>
-                            <span id="token-tracker-icon" class="text-gray-600 text-sm">▼</span>
+                            <span id="token-tracker-icon" class="text-gray-600 text-sm">❯</span>
                         </button>
                         <div id="token-details-container" class="hidden mt-3 space-y-2">
                             <!-- Session Summary -->
@@ -201,7 +215,7 @@
                             <!-- Gemini (Required) -->
                         <div class="provider-card required">
                             <div class="flex items-center gap-2 mb-2">
-                                <span class="text-2xl font-bold" style="color: #4285F4; width: 24px; display: inline-block; text-align: center;">◆</span>
+                                <span class="text-2xl font-bold" style="color: #4285F4; width: 24px; display: inline-block; text-align: center;">❶</span>
                                 <div class="flex-1">
                                     <div class="flex items-center gap-2 flex-wrap">
                                         <h3 class="font-bold text-base">Google Gemini</h3>
@@ -225,6 +239,8 @@
                                 placeholder="AIza..."
                                 class="input-field flex-1"
                                 autocomplete="off"
+                                onfocus="handleKeyInputFocus('gemini')"
+                                onblur="handleKeyInputBlur('gemini')"
                             />
                             <button 
                                 class="eyeball-toggle text-lg px-2" 
@@ -251,7 +267,7 @@
                         <!-- OpenAI (Optional) -->
                         <div class="provider-card">
                             <div class="flex items-center gap-2 mb-2">
-                                <span class="text-2xl font-bold" style="color: #10A37F; width: 24px; display: inline-block; text-align: center;">◇</span>
+                                <span class="text-2xl font-bold" style="color: #10A37F; width: 24px; display: inline-block; text-align: center;">❷</span>
                                 <div class="flex-1">
                                     <div class="flex items-center gap-1 flex-wrap">
                                         <h3 class="font-bold text-base">OpenAI GPT-4</h3>
@@ -276,6 +292,8 @@
                                 placeholder="sk-..."
                                 class="input-field flex-1"
                                 autocomplete="off"
+                                onfocus="handleKeyInputFocus('openai')"
+                                onblur="handleKeyInputBlur('openai')"
                             />
                             <button 
                                 class="eyeball-toggle text-lg px-2" 
@@ -300,7 +318,7 @@
                         <!-- Anthropic Claude (Optional) -->
                         <div class="provider-card">
                             <div class="flex items-center gap-2 mb-2">
-                                <span class="text-2xl font-bold" style="color: #D97757; width: 24px; display: inline-block; text-align: center;">▲</span>
+                                <span class="text-2xl font-bold" style="color: #D97757; width: 24px; display: inline-block; text-align: center;">❸</span>
                                 <div class="flex-1">
                                     <div class="flex items-center gap-1 flex-wrap">
                                         <h3 class="font-bold text-base">Anthropic Claude</h3>
@@ -325,6 +343,8 @@
                                 placeholder="sk-ant-..."
                                 class="input-field flex-1"
                                 autocomplete="off"
+                                onfocus="handleKeyInputFocus('anthropic')"
+                                onblur="handleKeyInputBlur('anthropic')"
                             />
                             <button 
                                 class="eyeball-toggle text-lg px-2" 
@@ -349,7 +369,7 @@
                         <!-- Perplexity (Optional) -->
                         <div class="provider-card">
                             <div class="flex items-center gap-2 mb-2">
-                                <span class="text-2xl font-bold" style="color: #1FB6FF; width: 24px; display: inline-block; text-align: center;">■</span>
+                                <span class="text-2xl font-bold" style="color: #1FB6FF; width: 24px; display: inline-block; text-align: center;">❹</span>
                                 <div class="flex-1">
                                     <div class="flex items-center gap-1 flex-wrap">
                                         <h3 class="font-bold text-base">Perplexity AI</h3>
@@ -374,6 +394,8 @@
                                 placeholder="Paste Perplexity API key"
                                 class="input-field flex-1"
                                 autocomplete="off"
+                                onfocus="handleKeyInputFocus('perplexity')"
+                                onblur="handleKeyInputBlur('perplexity')"
                             />
                             <button 
                                 class="eyeball-toggle text-lg px-2" 
@@ -398,11 +420,11 @@
                         <!-- DeepSeek (Optional - Ultra Low Cost) -->
                         <div class="provider-card">
                             <div class="flex items-center gap-2 mb-2">
-                                <span class="text-2xl font-bold" style="color: #FFD700; width: 24px; display: inline-block; text-align: center;">★</span>
+                                <span class="text-2xl font-bold" style="color: #FFD700; width: 24px; display: inline-block; text-align: center;">❺</span>
                                 <div class="flex-1">
                                     <div class="flex items-center gap-1 flex-wrap">
                                         <h3 class="font-bold text-base">DeepSeek</h3>
-                                        <span class="badge bg-green-500 text-white text-[10px] px-1">100x Cheaper!</span>
+                                        <span class="badge bg-gray-500 text-white text-[10px] px-1">Optional</span>
                                         <div class="api-status-badge" id="deepseek-status-badge" data-provider="deepseek">
                                             <span class="status-text" id="deepseek-status-text">○ Not Set</span>
                                             <button class="status-menu-btn hidden" id="deepseek-menu-btn" onclick="toggleStatusMenu('deepseek')" title="Manage key">⋮</button>
@@ -423,6 +445,8 @@
                                 placeholder="sk-..."
                                 class="input-field flex-1"
                                 autocomplete="off"
+                                onfocus="handleKeyInputFocus('deepseek')"
+                                onblur="handleKeyInputBlur('deepseek')"
                             />
                             <button 
                                 class="eyeball-toggle text-lg px-2" 
@@ -467,8 +491,6 @@
             <div id="available-agents" class="bg-gray-50 rounded-xl p-4 sm:p-6 mb-4">
                 <!-- Populated by JavaScript -->
             </div>
-
-
         </div>
 
         <!-- Main Application Section -->
@@ -539,7 +561,7 @@
             <p>
                 Built with 💜 by D. Schwager / BrewX • 
                 <a href="https://github.com" class="underline hover:text-white">GitHub</a> • 
-                v3.1.0 (DeepSeek) • Build 2025-10-31
+                v3.3.1 • Build 2025-11-01
             </p>
             <p class="mt-1">
                 100% Client-Side • Your images never leave your browser • 
@@ -564,10 +586,22 @@
             const icon = document.getElementById('explanation-icon');
             if (content.classList.contains('hidden')) {
                 content.classList.remove('hidden');
-                icon.textContent = '▲';
+                icon.classList.add('rotate-90');
             } else {
                 content.classList.add('hidden');
-                icon.textContent = '▼';
+                icon.classList.remove('rotate-90');
+            }
+        }
+
+        function toggleQuickStart() {
+            const content = document.getElementById('quickstart-content');
+            const icon = document.getElementById('quickstart-icon');
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.classList.add('rotate-90');
+            } else {
+                content.classList.add('hidden');
+                icon.classList.remove('rotate-90');
             }
         }
 
@@ -599,11 +633,31 @@
             if (window.apiKeyManager) {
                 const input = document.getElementById(`${provider}-key-input`);
                 const key = input.value.trim();
+                
+                // If input is masked or empty and we have a key, user doesn't want to change it
+                const isMasked = input.getAttribute('data-masked') === 'true';
+                if (isMasked || (!key && input.getAttribute('data-has-key') === 'true')) {
+                    alert('API key is already saved. Clear the field to enter a new key.');
+                    return;
+                }
+                
                 if (!key) {
                     alert('Please enter an API key first');
                     return;
                 }
                 window.apiKeyManager.saveKey(provider, key);
+            }
+        }
+        
+        function handleKeyInputFocus(provider) {
+            if (window.apiKeyManager) {
+                window.apiKeyManager.handleKeyInputFocus(provider);
+            }
+        }
+        
+        function handleKeyInputBlur(provider) {
+            if (window.apiKeyManager) {
+                window.apiKeyManager.handleKeyInputBlur(provider);
             }
         }
 
@@ -855,11 +909,11 @@
             
             const keys = window.apiKeyManager.keys;
             const providers = [
-                { id: 'gemini', shape: '◆', letter: 'G', name: 'Gemini', color: '#4285F4' },
-                { id: 'openai', shape: '◇', letter: 'O', name: 'OpenAI', color: '#10A37F' },
-                { id: 'anthropic', shape: '▲', letter: 'C', name: 'Claude', color: '#D97757' },
-                { id: 'perplexity', shape: '■', letter: 'P', name: 'Perplexity', color: '#1FB6FF' },
-                { id: 'deepseek', shape: '★', letter: 'D', name: 'DeepSeek', color: '#FFD700' }
+                { id: 'gemini', activeShape: '❶', inactiveShape: '➀', letter: 'G', name: 'Gemini', color: '#4285F4' },
+                { id: 'openai', activeShape: '❷', inactiveShape: '➁', letter: 'O', name: 'OpenAI', color: '#10A37F' },
+                { id: 'anthropic', activeShape: '❸', inactiveShape: '➂', letter: 'C', name: 'Claude', color: '#D97757' },
+                { id: 'perplexity', activeShape: '❹', inactiveShape: '➃', letter: 'P', name: 'Perplexity', color: '#1FB6FF' },
+                { id: 'deepseek', activeShape: '❺', inactiveShape: '➄', letter: 'D', name: 'DeepSeek', color: '#FFD700' }
             ];
             
             quickStatus.innerHTML = providers.map(p => {
@@ -891,18 +945,23 @@
                     className = 'opacity-40';
                 }
                 
-                // Make ALL shapes GREEN when active (analyzing or used), gray when inactive
-                let displayColor = shapeColor;
+                // Choose shape and color based on state
+                let displayShape, displayColor;
                 if (isAnalyzing || wasUsed) {
+                    displayShape = p.activeShape;
                     displayColor = '#10B981'; // Green for active/working
-                } else if (!hasKey) {
-                    displayColor = '#D1D5DB'; // Gray for not configured
+                } else if (hasKey) {
+                    displayShape = p.activeShape;
+                    displayColor = p.color; // Brand color when ready
+                } else {
+                    displayShape = p.inactiveShape;
+                    displayColor = '#9CA3AF'; // Gray for not configured
                 }
                 
                 // Responsive: uniform-sized shape + letter on mobile, shape + name on desktop
                 return `<span class="flex items-center gap-1 ${className} transition-all duration-200" 
                                title="${p.name}: ${stateText}">
-                    <span class="text-xl font-bold leading-none" style="color: ${displayColor}; width: 20px; display: inline-block; text-align: center;">${stateIcon}${p.shape}</span>
+                    <span class="text-xl font-bold leading-none" style="color: ${displayColor}; width: 20px; display: inline-block; text-align: center;">${stateIcon}${displayShape}</span>
                     <span class="text-xs font-bold sm:hidden">${p.letter}</span>
                     <span class="text-xs font-medium hidden sm:inline">${p.name}</span>
                 </span>`;
@@ -938,14 +997,14 @@
             
             if (container.classList.contains('hidden')) {
                 container.classList.remove('hidden');
-                icon.textContent = '▲';
+                icon.classList.add('rotate-90');
                 // Update the display
                 if (window.tokenTracker) {
                     window.tokenTracker.updateDetailedView();
                 }
             } else {
                 container.classList.add('hidden');
-                icon.textContent = '▼';
+                icon.classList.remove('rotate-90');
             }
         }
     </script>
