@@ -959,12 +959,16 @@ For exports with embedded images, use HTML, Markdown, or PDF format.
       return;
     }
     
+    // Find the submit button
+    const button = document.querySelector('[onclick*="submitFollowupQuestion"]');
+    const originalText = button ? button.textContent : 'Ask Follow-up Question';
+    
     try {
       // Show loading state
-      const button = event.target;
-      const originalText = button.textContent;
-      button.disabled = true;
-      button.textContent = '⏳ Processing...';
+      if (button) {
+        button.disabled = true;
+        button.textContent = '⏳ Processing...';
+      }
       
       // Get the primary agent (Gemini) to answer the follow-up
       const images = this.imageProcessor.getImages();
@@ -983,20 +987,23 @@ For exports with embedded images, use HTML, Markdown, or PDF format.
       this.displayFollowupResponse(question, response);
       
       // Clear textarea
-      textarea.value = '';
+      if (textarea) textarea.value = '';
       
       // Reset button
-      button.disabled = false;
-      button.textContent = originalText;
+      if (button) {
+        button.disabled = false;
+        button.textContent = originalText;
+      }
       
     } catch (error) {
       console.error('Follow-up question failed:', error);
       alert('Failed to process follow-up question. Please try again.');
       
       // Reset button
-      const button = event.target;
-      button.disabled = false;
-      button.textContent = '❓ Ask Follow-up Question';
+      if (button) {
+        button.disabled = false;
+        button.textContent = originalText;
+      }
     }
   }
   
