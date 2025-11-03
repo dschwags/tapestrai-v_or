@@ -761,34 +761,34 @@ Focus on factual accuracy, not opinions.`;
       searchTerms.push('historical artifact');
     }
     
-    // Generate Wikipedia link
-    const wikiTerm = searchTerms[0].replace(/\s+/g, '_');
+    // Generate Wikipedia link (no special characters in URL path)
+    const wikiTerm = searchTerms[0].replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
     links.push({
       title: `Wikipedia: ${searchTerms[0]}`,
-      url: `https://en.wikipedia.org/wiki/${encodeURIComponent(wikiTerm)}`,
-      description: 'General encyclopedia information',
+      url: `https://en.wikipedia.org/wiki/${wikiTerm}`,
+      description: 'Encyclopedia information and history',
       icon: '📖'
     });
     
     // Generate Google Scholar link
     const scholarQuery = searchTerms.slice(0, 2).join(' ');
     links.push({
-      title: `Google Scholar: Research Papers`,
+      title: `Google Scholar Research`,
       url: `https://scholar.google.com/scholar?q=${encodeURIComponent(scholarQuery)}`,
       description: 'Academic research and publications',
       icon: '🎓'
     });
     
-    // Generate Smithsonian link
+    // Generate Smithsonian link (corrected URL format)
     const smithsonianQuery = searchTerms.slice(0, 2).join(' ');
     links.push({
       title: `Smithsonian Collections`,
-      url: `https://collections.si.edu/search/results.htm?q=${encodeURIComponent(smithsonianQuery)}`,
+      url: `https://collections.si.edu/search/?q=${encodeURIComponent(smithsonianQuery)}`,
       description: 'Museum artifacts and collections',
       icon: '🏛️'
     });
     
-    // Generate Google Arts & Culture link
+    // Generate Google Arts & Culture link (corrected URL format)
     const artsQuery = searchTerms[0];
     links.push({
       title: `Google Arts & Culture`,
@@ -797,21 +797,68 @@ Focus on factual accuracy, not opinions.`;
       icon: '🎨'
     });
     
-    // Generate Met Museum link
+    // Generate Met Museum link (corrected URL format)
     const metQuery = searchTerms.slice(0, 2).join(' ');
     links.push({
-      title: `The Metropolitan Museum of Art`,
-      url: `https://www.metmuseum.org/art/collection/search#!?q=${encodeURIComponent(metQuery)}`,
-      description: 'Metropolitan Museum collections',
+      title: `Metropolitan Museum of Art`,
+      url: `https://www.metmuseum.org/art/collection/search?q=${encodeURIComponent(metQuery)}`,
+      description: 'Met Museum collections',
       icon: '🏺'
     });
     
-    // Generate general Google search link
-    const googleQuery = searchTerms.join(' ') + ' history';
+    // Generate V&A Museum link
+    const vaQuery = searchTerms.slice(0, 2).join(' ');
     links.push({
-      title: `Google Search: ${searchTerms[0]}`,
+      title: `Victoria & Albert Museum`,
+      url: `https://collections.vam.ac.uk/search/?q=${encodeURIComponent(vaQuery)}`,
+      description: 'V&A collections and archives',
+      icon: '🏛️'
+    });
+    
+    // === Similar Items for Sale/Research ===
+    
+    // eBay - similar items
+    const ebayQuery = searchTerms.slice(0, 2).join(' ') + ' antique vintage';
+    links.push({
+      title: `eBay: Similar Items`,
+      url: `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(ebayQuery)}`,
+      description: 'Find similar items and current market values',
+      icon: '🛒'
+    });
+    
+    // Etsy - similar vintage/antique items
+    const etsyQuery = searchTerms.slice(0, 2).join(' ') + ' vintage antique';
+    links.push({
+      title: `Etsy: Vintage Similar Items`,
+      url: `https://www.etsy.com/search?q=${encodeURIComponent(etsyQuery)}`,
+      description: 'Vintage and handmade similar items',
+      icon: '🎁'
+    });
+    
+    // Ruby Lane - antiques and collectibles
+    const rubyQuery = searchTerms.slice(0, 2).join(' ');
+    links.push({
+      title: `Ruby Lane: Antiques`,
+      url: `https://www.rubylane.com/search?q=${encodeURIComponent(rubyQuery)}`,
+      description: 'High-end antiques and collectibles',
+      icon: '💎'
+    });
+    
+    // 1stDibs - luxury antiques
+    const stdibs = searchTerms.slice(0, 2).join(' ');
+    links.push({
+      title: `1stDibs: Luxury Antiques`,
+      url: `https://www.1stdibs.com/search/?q=${encodeURIComponent(stdibs)}`,
+      description: 'High-end similar items and valuations',
+      icon: '✨'
+    });
+    
+    // Generate general Google search link
+    const googleQuery = searchTerms.join(' ') + ' antique history';
+    links.push({
+      title: `Google Search`,
       url: `https://www.google.com/search?q=${encodeURIComponent(googleQuery)}`,
-      description: 'General web search',
+      description: 'General web search for more info',
       icon: '🔍'
     });
     

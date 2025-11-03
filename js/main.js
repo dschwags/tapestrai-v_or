@@ -358,14 +358,14 @@ class TapestrAI {
             <h3 class="text-xl font-bold text-gray-800">Material Analysis</h3>
           </div>
           
+          ${this.renderSection('Category', primary.category)}
+          ${this.renderSection('Confidence Assessment', primary.confidence)}
+          ${this.renderSection('Cultural Context & Historical Context', primary.culturalContext)}
           ${this.renderSection('Materials', primary.materials)}
           ${this.renderSection('Construction', primary.construction)}
           ${this.renderSection('Markings & Text', primary.markings)}
           ${this.renderSection('Age Indicators', primary.ageIndicators)}
           ${this.renderSection('Purpose & Function', primary.purpose)}
-          ${this.renderSection('Cultural Context', primary.culturalContext)}
-          ${this.renderSection('Category', primary.category)}
-          ${this.renderSection('Confidence Assessment', primary.confidence)}
         ${primary.keyClaims ? this.renderSection('Key Claims for Verification', primary.keyClaims) : ''}
         </div>
         
@@ -456,24 +456,54 @@ class TapestrAI {
               <h3 class="text-lg font-bold text-gray-900">Suggested Resources for Further Research</h3>
             </div>
             <div class="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg p-4">
-              <p class="text-sm text-gray-700 mb-3">
-                <strong>Want to learn more?</strong> These curated links will help you verify information and explore this artifact's history in greater depth.
+              <p class="text-sm text-gray-700 mb-4">
+                <strong>Want to learn more?</strong> These curated links will help you verify information, explore this artifact's history, and find similar items.
               </p>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                ${results.researchLinks.map(link => `
-                  <a href="${link.url}" target="_blank" rel="noopener noreferrer" 
-                     class="flex items-start gap-3 p-3 bg-white hover:bg-gray-50 rounded-lg border border-orange-200 hover:border-orange-400 transition-colors">
-                    <span class="text-2xl flex-shrink-0">${link.icon}</span>
-                    <div class="flex-1 min-w-0">
-                      <div class="font-semibold text-gray-900 text-sm">${link.title}</div>
-                      <div class="text-xs text-gray-600 mt-1">${link.description}</div>
-                    </div>
-                    <span class="text-orange-500 text-sm flex-shrink-0">↗</span>
-                  </a>
-                `).join('')}
+              
+              <!-- Museums & Research -->
+              <div class="mb-4">
+                <h4 class="text-sm font-bold text-gray-800 mb-2 flex items-center gap-2">
+                  <span>🏛️</span>
+                  <span>Museums & Academic Research</span>
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  ${results.researchLinks.slice(0, 6).map(link => `
+                    <a href="${link.url}" target="_blank" rel="noopener noreferrer" 
+                       class="flex items-start gap-3 p-3 bg-white hover:bg-gray-50 rounded-lg border border-orange-200 hover:border-orange-400 transition-colors">
+                      <span class="text-2xl flex-shrink-0">${link.icon}</span>
+                      <div class="flex-1 min-w-0">
+                        <div class="font-semibold text-gray-900 text-sm">${link.title}</div>
+                        <div class="text-xs text-gray-600 mt-1">${link.description}</div>
+                      </div>
+                      <span class="text-orange-500 text-sm flex-shrink-0">↗</span>
+                    </a>
+                  `).join('')}
+                </div>
               </div>
+              
+              <!-- Similar Items for Sale -->
+              <div class="mb-3">
+                <h4 class="text-sm font-bold text-gray-800 mb-2 flex items-center gap-2">
+                  <span>🛒</span>
+                  <span>Similar Items & Market Values</span>
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  ${results.researchLinks.slice(6).map(link => `
+                    <a href="${link.url}" target="_blank" rel="noopener noreferrer" 
+                       class="flex items-start gap-3 p-3 bg-white hover:bg-gray-50 rounded-lg border border-orange-200 hover:border-orange-400 transition-colors">
+                      <span class="text-2xl flex-shrink-0">${link.icon}</span>
+                      <div class="flex-1 min-w-0">
+                        <div class="font-semibold text-gray-900 text-sm">${link.title}</div>
+                        <div class="text-xs text-gray-600 mt-1">${link.description}</div>
+                      </div>
+                      <span class="text-orange-500 text-sm flex-shrink-0">↗</span>
+                    </a>
+                  `).join('')}
+                </div>
+              </div>
+              
               <p class="text-xs text-gray-600 mt-3 italic">
-                💡 Tip: Cross-reference multiple sources to verify information and gain deeper understanding.
+                💡 Tip: Cross-reference multiple sources to verify information and research current market values for similar items.
               </p>
             </div>
           </div>

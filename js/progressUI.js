@@ -172,7 +172,10 @@ class ProgressUI {
     container.innerHTML = `
       <div class="progress-container">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-xl font-bold text-gray-900">Analysis in Progress</h3>
+          <div class="flex items-center gap-2">
+            <span class="spinner text-2xl">⚙️</span>
+            <h3 class="text-xl font-bold text-gray-900">Analysis in Progress</h3>
+          </div>
           <span class="text-sm font-medium text-gray-600">${completedSteps}/${totalSteps} steps</span>
         </div>
         
@@ -218,7 +221,14 @@ class ProgressUI {
               <div class="text-xs text-red-500 mt-1">${step.errorMessage}</div>
             ` : ''}
             ${step.status === 'active' ? `
-              <div class="text-xs text-gray-500 mt-1">Working...</div>
+              <div class="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                <span>Working</span>
+                <div class="thinking-dots">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+              </div>
             ` : ''}
           </div>
         </div>
