@@ -11,7 +11,7 @@ class AgentOrchestrator {
   /**
    * Run complete multi-agent analysis
    */
-  async analyzeWithAgents(images, apiKeyManager, progressUI, costTracker) {
+  async analyzeWithAgents(images, apiKeyManager, progressUI, costTracker, userContext = '') {
     try {
       // Start cost tracking
       if (costTracker) {
@@ -39,7 +39,7 @@ class AgentOrchestrator {
       if (progressUI) progressUI.setStep('material', 'active');
       const primaryAnalysis = await this.universalAnalyzer.analyze(
         imageDataArray[0], // Use first image for now
-        '',
+        userContext, // Pass user-provided material details
         apiKeyManager
       );
       if (progressUI) progressUI.nextStep();

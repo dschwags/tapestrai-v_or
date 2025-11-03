@@ -155,6 +155,79 @@ class TapestrAI {
   }
   
   /**
+   * Collect material details from form
+   */
+  collectMaterialDetails() {
+    const details = [];
+    
+    // Size & Weight
+    const size = document.getElementById('artifact-size')?.value?.trim();
+    const weight = document.getElementById('artifact-weight')?.value?.trim();
+    if (size) details.push(`Size/Dimensions: ${size}`);
+    if (weight) details.push(`Weight: ${weight}`);
+    
+    // Bead/Embellishment Details
+    const beadTypes = Array.from(document.querySelectorAll('input[name="bead-type"]:checked'))
+      .map(el => el.value);
+    if (beadTypes.length > 0) {
+      details.push(`Bead/Embellishment Types: ${beadTypes.join(', ')}`);
+    }
+    
+    const beadMetal = Array.from(document.querySelectorAll('input[name="bead-metal"]:checked'))
+      .map(el => el.value);
+    if (beadMetal.length > 0) {
+      details.push(`Metal Condition: ${beadMetal.join(', ')}`);
+    }
+    
+    const beadColor = document.getElementById('bead-color')?.value?.trim();
+    if (beadColor) details.push(`Colors: ${beadColor}`);
+    
+    // Clasp/Opening Details
+    const claspTypes = Array.from(document.querySelectorAll('input[name="clasp-type"]:checked'))
+      .map(el => {
+        if (el.value === 'Other') {
+          const otherText = document.getElementById('clasp-type-other-text')?.value?.trim();
+          return otherText ? `Other (${otherText})` : 'Other';
+        }
+        return el.value;
+      });
+    if (claspTypes.length > 0) {
+      details.push(`Clasp/Opening Type: ${claspTypes.join(', ')}`);
+    }
+    
+    const claspMaterials = Array.from(document.querySelectorAll('input[name="clasp-material"]:checked'))
+      .map(el => {
+        if (el.value === 'Other') {
+          const otherText = document.getElementById('clasp-material-other-text')?.value?.trim();
+          return otherText ? `Other (${otherText})` : 'Other';
+        }
+        return el.value;
+      });
+    if (claspMaterials.length > 0) {
+      details.push(`Clasp/Opening Material: ${claspMaterials.join(', ')}`);
+    }
+    
+    // Thread/String Details
+    const threadMaterials = Array.from(document.querySelectorAll('input[name="thread-material"]:checked'))
+      .map(el => {
+        if (el.value === 'Other') {
+          const otherText = document.getElementById('thread-material-other-text')?.value?.trim();
+          return otherText ? `Other (${otherText})` : 'Other';
+        }
+        return el.value;
+      });
+    if (threadMaterials.length > 0) {
+      details.push(`Thread/String Material: ${threadMaterials.join(', ')}`);
+    }
+    
+    // Other Notes
+    const notes = document.getElementById('general-notes')?.value?.trim();
+    if (notes) details.push(`Additional Notes: ${notes}`);
+    
+    return details.length > 0 ? details.join('\n') : '';
+  }
+  
+  /**
    * Update analyze button state
    */
   updateAnalyzeButtonState() {
@@ -210,6 +283,12 @@ class TapestrAI {
         throw new Error('No images to analyze');
       }
       
+      // Collect material details from form
+      const materialDetails = this.collectMaterialDetails();
+      if (materialDetails) {
+        console.log('📋 User-provided material details:', materialDetails);
+      }
+      
       // Run analysis with orchestrator
       console.log(`Starting analysis with ${images.length} image(s)...`);
       
@@ -217,7 +296,8 @@ class TapestrAI {
         images,
         this.apiKeyManager,
         this.progressUI,
-        this.costTracker
+        this.costTracker,
+        materialDetails // Pass material details to orchestrator
       );
       
       console.log('✓ Analysis complete:', results);
@@ -399,6 +479,104 @@ class TapestrAI {
           </div>
         ` : ''}
         
+        <!-- Generate Sales Description Feature (Gemini only) -->
+        ${this.apiKeyManager.keys.gemini ? `
+          <div class="mt-6 pt-6 border-t">
+            <details id="sales-description-section" class="bg-gradient-to-r from-indigo-50 to-blue-50 border-2 border-indigo-200 rounded-lg">
+              <summary class="cursor-pointer p-4 font-semibold text-indigo-900 hover:bg-indigo-100 rounded-lg transition-colors">
+                ✨ Generate Sales Description (Optional)
+              </summary>
+              <div class="p-4 pt-0 space-y-4">
+                <p class="text-sm text-gray-700 mb-3">
+                  Create a compelling sales description based on the analysis. Perfect for listing this artifact online.
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label for="desc-dimensions" class="block text-sm font-medium text-gray-700 mb-1">
+                      Dimensions (will use from details if provided)
+                    </label>
+                    <input 
+                      type="text" 
+                      id="desc-dimensions" 
+                      class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm" 
+                      placeholder="e.g., 6 inches wide"
+                    />
+                  </div>
+                  <div>
+                    <label for="desc-materials" class="block text-sm font-medium text-gray-700 mb-1">
+                      Key Materials (optional override)
+                    </label>
+                    <input 
+                      type="text" 
+                      id="desc-materials" 
+                      class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm" 
+                      placeholder="e.g., Silk brocade"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label for="desc-style" class="block text-sm font-medium text-gray-700 mb-1">
+                    Description Style
+                  </label>
+                  <select 
+                    id="desc-style" 
+                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                  >
+                    <option value="Factual">Factual & Concise</option>
+                    <option value="Story-telling">Story-telling (Evoke owner & era)</option>
+                    <option value="Craftsmanship">Craftsmanship Focus</option>
+                  </select>
+                </div>
+                <button 
+                  id="generate-desc-btn"
+                  onclick="window.main.generateSalesDescription()" 
+                  class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
+                  <span id="generate-desc-text">Generate Description</span>
+                </button>
+                <div id="sales-description-result" class="hidden mt-4">
+                  <div class="bg-white rounded-lg p-4 border border-indigo-300">
+                    <h4 class="font-semibold text-gray-900 mb-2">Generated Description:</h4>
+                    <div id="sales-description-content" class="text-gray-800 text-sm leading-relaxed"></div>
+                    <button 
+                      onclick="window.main.copySalesDescription()" 
+                      class="mt-3 text-sm text-indigo-600 hover:text-indigo-800 font-medium">
+                      📋 Copy to Clipboard
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </details>
+          </div>
+        ` : ''}
+        
+        <!-- Conservation Advice Feature (Gemini only) -->
+        ${this.apiKeyManager.keys.gemini ? `
+          <div class="mt-6 pt-6 border-t">
+            <details id="conservation-advice-section" class="bg-gradient-to-r from-teal-50 to-green-50 border-2 border-teal-200 rounded-lg">
+              <summary class="cursor-pointer p-4 font-semibold text-teal-900 hover:bg-teal-100 rounded-lg transition-colors">
+                ✨ Get Conservation Advice
+              </summary>
+              <div class="p-4 pt-0 space-y-4">
+                <p class="text-sm text-gray-700 mb-3">
+                  Get expert advice on how to preserve and care for this artifact based on its materials and condition.
+                </p>
+                <button 
+                  id="get-conservation-btn"
+                  onclick="window.main.getConservationAdvice()" 
+                  class="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
+                  <span id="get-conservation-text">Get Advice Based on Analysis</span>
+                </button>
+                <div id="conservation-advice-result" class="hidden mt-4">
+                  <div class="bg-white rounded-lg p-4 border border-teal-300">
+                    <h4 class="font-semibold text-gray-900 mb-2">Conservation Advice:</h4>
+                    <div id="conservation-advice-content" class="text-gray-800 text-sm leading-relaxed"></div>
+                  </div>
+                </div>
+              </div>
+            </details>
+          </div>
+        ` : ''}
+        
         <!-- Follow-up Questions Section -->
         <div class="mt-6 pt-6 border-t">
           <h3 class="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
@@ -501,6 +679,224 @@ class TapestrAI {
       .replace(/\n\n/g, '</p><p>')
       .replace(/^(.+)$/gm, '<p>$1</p>')
       .replace(/<p><\/p>/g, '');
+  }
+  
+  /**
+   * Generate Sales Description
+   */
+  async generateSalesDescription() {
+    if (!this.currentResults || !this.apiKeyManager.keys.gemini) {
+      alert('Gemini API key required for this feature');
+      return;
+    }
+    
+    const btn = document.getElementById('generate-desc-btn');
+    const btnText = document.getElementById('generate-desc-text');
+    const resultDiv = document.getElementById('sales-description-result');
+    const contentDiv = document.getElementById('sales-description-content');
+    
+    try {
+      // Update button state
+      btn.disabled = true;
+      btnText.textContent = 'Generating...';
+      
+      // Get user inputs
+      const dimensions = document.getElementById('desc-dimensions')?.value?.trim() || 
+                        document.getElementById('artifact-size')?.value?.trim() || 'Not specified';
+      const materials = document.getElementById('desc-materials')?.value?.trim() || 'As analyzed';
+      const style = document.getElementById('desc-style')?.value || 'Factual';
+      
+      // Build prompt
+      const analysisText = this.currentResults.primary.rawText || '';
+      
+      const prompt = `Based on this artifact analysis, create a compelling sales description.
+
+ANALYSIS:
+${analysisText.substring(0, 1500)}
+
+DIMENSIONS: ${dimensions}
+KEY MATERIALS: ${materials}
+STYLE: ${style}
+
+Create a ${style.toLowerCase()} sales description (150-250 words) that:
+- Highlights key features and historical significance
+- Uses persuasive but accurate language
+- Includes condition notes if relevant
+- Appeals to collectors and history enthusiasts
+- Maintains authenticity and accuracy
+
+Format the description in paragraphs, ready to use for online listings.`;
+      
+      // Call Gemini API
+      const apiKey = this.apiKeyManager.keys.gemini;
+      const config = this.apiKeyManager.providers.gemini;
+      const endpoint = `${config.directEndpoint}/gemini-2.0-flash-exp:generateContent?key=${apiKey}`;
+      
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{ text: prompt }]
+          }],
+          generationConfig: {
+            temperature: 0.7,
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens: 1024
+          }
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      const description = data.candidates[0].content.parts[0].text;
+      
+      // Display result
+      contentDiv.innerHTML = this.formatText(description);
+      resultDiv.classList.remove('hidden');
+      
+      // Store for copy function
+      this.salesDescription = description;
+      
+      // Track usage
+      if (data.usageMetadata && window.costTracker) {
+        window.costTracker.trackCall(
+          'gemini',
+          data.usageMetadata.promptTokenCount || 0,
+          data.usageMetadata.candidatesTokenCount || 0,
+          'gemini-2.0-flash-exp'
+        );
+      }
+      
+    } catch (error) {
+      console.error('Failed to generate sales description:', error);
+      alert(`Failed to generate description: ${error.message}`);
+    } finally {
+      // Reset button
+      btn.disabled = false;
+      btnText.textContent = 'Generate Description';
+    }
+  }
+  
+  /**
+   * Copy Sales Description to Clipboard
+   */
+  async copySalesDescription() {
+    if (!this.salesDescription) return;
+    
+    try {
+      // Remove HTML formatting for plain text copy
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = this.salesDescription;
+      const plainText = tempDiv.textContent || tempDiv.innerText || '';
+      
+      await navigator.clipboard.writeText(plainText);
+      alert('✅ Sales description copied to clipboard!');
+    } catch (error) {
+      console.error('Failed to copy:', error);
+      alert('Failed to copy to clipboard. Please copy manually.');
+    }
+  }
+  
+  /**
+   * Get Conservation Advice
+   */
+  async getConservationAdvice() {
+    if (!this.currentResults || !this.apiKeyManager.keys.gemini) {
+      alert('Gemini API key required for this feature');
+      return;
+    }
+    
+    const btn = document.getElementById('get-conservation-btn');
+    const btnText = document.getElementById('get-conservation-text');
+    const resultDiv = document.getElementById('conservation-advice-result');
+    const contentDiv = document.getElementById('conservation-advice-content');
+    
+    try {
+      // Update button state
+      btn.disabled = true;
+      btnText.textContent = 'Generating Advice...';
+      
+      // Build prompt from analysis
+      const analysisText = this.currentResults.primary.rawText || '';
+      const materials = this.currentResults.primary.materials || '';
+      const condition = this.currentResults.primary.ageIndicators || '';
+      
+      const prompt = `Based on this artifact analysis, provide expert conservation and care advice.
+
+ANALYSIS:
+${analysisText.substring(0, 1500)}
+
+MATERIALS:
+${materials}
+
+CONDITION:
+${condition}
+
+Provide comprehensive conservation advice covering:
+1. Storage recommendations (temperature, humidity, light exposure)
+2. Handling guidelines
+3. Cleaning and maintenance (what to do and what to avoid)
+4. Display considerations
+5. Signs of deterioration to watch for
+6. When to consult a professional conservator
+
+Be specific to the materials and condition identified. Format with clear sections and bullet points where helpful.`;
+      
+      // Call Gemini API
+      const apiKey = this.apiKeyManager.keys.gemini;
+      const config = this.apiKeyManager.providers.gemini;
+      const endpoint = `${config.directEndpoint}/gemini-2.0-flash-exp:generateContent?key=${apiKey}`;
+      
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{ text: prompt }]
+          }],
+          generationConfig: {
+            temperature: 0.4,
+            topK: 32,
+            topP: 1,
+            maxOutputTokens: 2048
+          }
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      const advice = data.candidates[0].content.parts[0].text;
+      
+      // Display result
+      contentDiv.innerHTML = this.formatText(advice);
+      resultDiv.classList.remove('hidden');
+      
+      // Track usage
+      if (data.usageMetadata && window.costTracker) {
+        window.costTracker.trackCall(
+          'gemini',
+          data.usageMetadata.promptTokenCount || 0,
+          data.usageMetadata.candidatesTokenCount || 0,
+          'gemini-2.0-flash-exp'
+        );
+      }
+      
+    } catch (error) {
+      console.error('Failed to get conservation advice:', error);
+      alert(`Failed to generate advice: ${error.message}`);
+    } finally {
+      // Reset button
+      btn.disabled = false;
+      btnText.textContent = 'Get Advice Based on Analysis';
+    }
   }
   
   /**

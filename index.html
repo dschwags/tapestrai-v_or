@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>tapestrAI - Unravel your artifact's story</title>
-    <!-- Version: 3.3.0 - Follow-up Questions & Multi-Format Export | Build: 2025-11-03 08:17 EDT>
+    <!-- Version: 3.5.1 - AI Assistant Onboarding Guide | Build: 2025-11-03 10:13 EST -->
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -125,7 +125,7 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div class="bg-white/80 rounded-lg p-3">
                                 <div class="font-bold text-brand mb-1">1. Add API Keys</div>
-                                <p class="text-sm text-gray-600">At least Gemini required. More keys = deeper analysis.</p>
+                                <p class="text-sm text-gray-600">Add at least one API key. More keys = deeper multi-perspective analysis.</p>
                             </div>
                             
                             <div class="bg-white/80 rounded-lg p-3">
@@ -207,7 +207,7 @@
                         </div>
                     </div>
                     
-                    <p class="text-gray-600 mb-4">Add API keys to unlock more powerful analysis. <em>Gemini is required to begin.</em></p>
+                    <p class="text-gray-600 mb-4">Add API keys to unlock more powerful analysis. <em>At least one API key required (any provider works!).</em></p>
 
                     <!-- Why Your Own API Keys? (Collapsible Explanation) -->
                     <div class="bg-blue-50 border border-blue-200 rounded-lg mb-6">
@@ -586,6 +586,313 @@
                 </div>
             </div>
 
+            <!-- Material Details Section (Optional) -->
+            <div id="material-details-section" class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">Material Details (Optional)</h2>
+                <p class="text-sm text-gray-600 mb-4">Provide additional details to help the AI with more accurate analysis. All fields are optional.</p>
+                
+                <div class="space-y-4">
+                    <!-- Size & Weight -->
+                    <details class="bg-white border-2 border-gray-200 rounded-lg">
+                        <summary class="cursor-pointer p-4 font-semibold text-gray-800 hover:bg-gray-50 rounded-lg transition-colors">
+                            Size & Weight
+                        </summary>
+                        <div class="p-4 pt-0 space-y-4">
+                            <div>
+                                <label for="artifact-size" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Size / Dimensions (approx.)
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="artifact-size" 
+                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                                    placeholder="e.g., 7 inches wide x 5 inches tall"
+                                />
+                            </div>
+                            <div>
+                                <label for="artifact-weight" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Weight (approx.)
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="artifact-weight" 
+                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                                    placeholder="e.g., 1.2 lbs or 200g"
+                                />
+                            </div>
+                        </div>
+                    </details>
+
+                    <!-- Bead Details -->
+                    <details class="bg-white border-2 border-gray-200 rounded-lg">
+                        <summary class="cursor-pointer p-4 font-semibold text-gray-800 hover:bg-gray-50 rounded-lg transition-colors">
+                            Bead/Embellishment Details
+                        </summary>
+                        <div class="p-4 pt-0 space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Type (check all that apply)
+                                </label>
+                                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" name="bead-type" value="Glass (clear)" class="rounded" />
+                                        <span class="text-sm">Glass (clear)</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" name="bead-type" value="Glass (colored)" class="rounded" />
+                                        <span class="text-sm">Glass (colored)</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" name="bead-type" value="Cut Steel" class="rounded" />
+                                        <span class="text-sm">Cut Steel</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" name="bead-type" value="Plastic" class="rounded" />
+                                        <span class="text-sm">Plastic</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" name="bead-type" value="Metal" class="rounded" />
+                                        <span class="text-sm">Metal</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" name="bead-type" value="Faux Pearl" class="rounded" />
+                                        <span class="text-sm">Faux Pearl</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" name="bead-type" value="Real Pearl" class="rounded" />
+                                        <span class="text-sm">Real Pearl</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" name="bead-type" value="Shells" class="rounded" />
+                                        <span class="text-sm">Shells</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" name="bead-type" value="Seeds" class="rounded" />
+                                        <span class="text-sm">Seeds</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" name="bead-type" value="Bone/Ivory" class="rounded" />
+                                        <span class="text-sm">Bone/Ivory</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" name="bead-type" value="Sequins" class="rounded" />
+                                        <span class="text-sm">Sequins</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" name="bead-type" value="Other" class="rounded" />
+                                        <span class="text-sm">Other</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Metal Condition (check all that apply)
+                                </label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" name="bead-metal" value="Magnetic" class="rounded" />
+                                        <span class="text-sm">Magnetic</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" name="bead-metal" value="Non-Magnetic" class="rounded" />
+                                        <span class="text-sm">Non-Magnetic</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" name="bead-metal" value="Some Magnetic" class="rounded" />
+                                        <span class="text-sm">Some Magnetic</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" name="bead-metal" value="Tarnished" class="rounded" />
+                                        <span class="text-sm">Tarnished</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" name="bead-metal" value="Rust" class="rounded" />
+                                        <span class="text-sm">Rust</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="bead-color" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Colors
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="bead-color" 
+                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                                    placeholder="e.g., blue, silver, gold"
+                                />
+                            </div>
+                        </div>
+                    </details>
+
+                    <!-- Clasp/Opening Details -->
+                    <details class="bg-white border-2 border-gray-200 rounded-lg">
+                        <summary class="cursor-pointer p-4 font-semibold text-gray-800 hover:bg-gray-50 rounded-lg transition-colors">
+                            Clasp/Opening
+                        </summary>
+                        <div class="p-4 pt-0 space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Type (check all that apply)
+                                </label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" name="clasp-type" value="Kiss-lock" class="rounded" />
+                                        <span class="text-sm">Kiss-lock</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" name="clasp-type" value="Drawstring" class="rounded" />
+                                        <span class="text-sm">Drawstring</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" name="clasp-type" value="Snap" class="rounded" />
+                                        <span class="text-sm">Snap</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" name="clasp-type" value="Zipper" class="rounded" />
+                                        <span class="text-sm">Zipper</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" name="clasp-type" value="Lift-latch" class="rounded" />
+                                        <span class="text-sm">Lift-latch</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" name="clasp-type" value="Turn-lock" class="rounded" />
+                                        <span class="text-sm">Turn-lock</span>
+                                    </label>
+                                </div>
+                                <div class="mt-3">
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" name="clasp-type" value="Other" class="rounded" id="clasp-type-other-cb" />
+                                        <span class="text-sm font-medium">Other:</span>
+                                    </label>
+                                    <input 
+                                        type="text" 
+                                        id="clasp-type-other-text" 
+                                        class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm" 
+                                        placeholder="Specify other type" 
+                                        disabled
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Material (check all that apply)
+                                </label>
+                                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" name="clasp-material" value="Brass" class="rounded" />
+                                        <span class="text-sm">Brass</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" name="clasp-material" value="Bakelite" class="rounded" />
+                                        <span class="text-sm">Bakelite</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" name="clasp-material" value="Lucite" class="rounded" />
+                                        <span class="text-sm">Lucite</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" name="clasp-material" value="Silver" class="rounded" />
+                                        <span class="text-sm">Silver</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" name="clasp-material" value="Gold" class="rounded" />
+                                        <span class="text-sm">Gold</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" name="clasp-material" value="Celluloid" class="rounded" />
+                                        <span class="text-sm">Celluloid</span>
+                                    </label>
+                                </div>
+                                <div class="mt-3">
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" name="clasp-material" value="Other" class="rounded" id="clasp-material-other-cb" />
+                                        <span class="text-sm font-medium">Other:</span>
+                                    </label>
+                                    <input 
+                                        type="text" 
+                                        id="clasp-material-other-text" 
+                                        class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm" 
+                                        placeholder="Specify other material" 
+                                        disabled
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </details>
+
+                    <!-- Thread/String Details -->
+                    <details class="bg-white border-2 border-gray-200 rounded-lg">
+                        <summary class="cursor-pointer p-4 font-semibold text-gray-800 hover:bg-gray-50 rounded-lg transition-colors">
+                            Thread/String
+                        </summary>
+                        <div class="p-4 pt-0">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Material (check all that apply)
+                            </label>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" name="thread-material" value="Silk" class="rounded" />
+                                    <span class="text-sm">Silk</span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" name="thread-material" value="Cotton" class="rounded" />
+                                    <span class="text-sm">Cotton</span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" name="thread-material" value="Linen" class="rounded" />
+                                    <span class="text-sm">Linen</span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" name="thread-material" value="Nylon" class="rounded" />
+                                    <span class="text-sm">Nylon</span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" name="thread-material" value="Rayon" class="rounded" />
+                                    <span class="text-sm">Rayon</span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" name="thread-material" value="Wire" class="rounded" />
+                                    <span class="text-sm">Wire</span>
+                                </label>
+                            </div>
+                            <div class="mt-3">
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" name="thread-material" value="Other" class="rounded" id="thread-material-other-cb" />
+                                    <span class="text-sm font-medium">Other:</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="thread-material-other-text" 
+                                    class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm" 
+                                    placeholder="Specify other material" 
+                                    disabled
+                                />
+                            </div>
+                        </div>
+                    </details>
+
+                    <!-- Other Notes -->
+                    <details class="bg-white border-2 border-gray-200 rounded-lg">
+                        <summary class="cursor-pointer p-4 font-semibold text-gray-800 hover:bg-gray-50 rounded-lg transition-colors">
+                            Other Notes
+                        </summary>
+                        <div class="p-4 pt-0">
+                            <label for="general-notes" class="block text-sm font-medium text-gray-700 mb-1">
+                                Additional observations (smell, lining, location found, etc.)
+                            </label>
+                            <textarea 
+                                id="general-notes" 
+                                rows="4" 
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                                placeholder="Any other details about the artifact..."
+                            ></textarea>
+                        </div>
+                    </details>
+                </div>
+            </div>
+
             <!-- Analysis Controls -->
             <div id="analysis-controls" class="mb-6">
                 <button 
@@ -621,7 +928,7 @@
             <p>
                 Built with 💜 by D. Schwager / BrewX • 
                 <a href="https://github.com" class="underline hover:text-white">GitHub</a> • 
-                v3.3.1 • Build 2025-11-01
+                v3.5.1 • Build 2025-11-03
             </p>
             <p class="mt-1">
                 100% Client-Side • Your images never leave your browser • 
@@ -797,6 +1104,40 @@
                 window.main.startAnalysis();
             }
         }
+
+        // Material Details Form Handlers
+        // Enable/disable "Other" text inputs based on checkbox state
+        document.addEventListener('DOMContentLoaded', () => {
+            // Clasp Type Other
+            const claspTypeOtherCb = document.getElementById('clasp-type-other-cb');
+            const claspTypeOtherText = document.getElementById('clasp-type-other-text');
+            if (claspTypeOtherCb && claspTypeOtherText) {
+                claspTypeOtherCb.addEventListener('change', () => {
+                    claspTypeOtherText.disabled = !claspTypeOtherCb.checked;
+                    if (claspTypeOtherCb.checked) claspTypeOtherText.focus();
+                });
+            }
+            
+            // Clasp Material Other
+            const claspMaterialOtherCb = document.getElementById('clasp-material-other-cb');
+            const claspMaterialOtherText = document.getElementById('clasp-material-other-text');
+            if (claspMaterialOtherCb && claspMaterialOtherText) {
+                claspMaterialOtherCb.addEventListener('change', () => {
+                    claspMaterialOtherText.disabled = !claspMaterialOtherCb.checked;
+                    if (claspMaterialOtherCb.checked) claspMaterialOtherText.focus();
+                });
+            }
+            
+            // Thread Material Other
+            const threadMaterialOtherCb = document.getElementById('thread-material-other-cb');
+            const threadMaterialOtherText = document.getElementById('thread-material-other-text');
+            if (threadMaterialOtherCb && threadMaterialOtherText) {
+                threadMaterialOtherCb.addEventListener('change', () => {
+                    threadMaterialOtherText.disabled = !threadMaterialOtherCb.checked;
+                    if (threadMaterialOtherCb.checked) threadMaterialOtherText.focus();
+                });
+            }
+        });
 
         // Status Badge Management
         function updateStatusBadge(provider, status, message = null) {
