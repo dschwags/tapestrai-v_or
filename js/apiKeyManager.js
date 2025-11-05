@@ -377,7 +377,7 @@ class APIKeyManager {
             headers: {
               'Authorization': `Bearer ${key}`,
               'HTTP-Referer': window.location.origin,
-              'X-Title': 'tapestrAI',
+              'X-Title': 'TapestrAI',  // FIXED: Use plain ASCII only
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
@@ -768,7 +768,7 @@ class APIKeyManager {
         headers: {
           'Authorization': `Bearer ${this.keys.openrouter}`,
           'HTTP-Referer': window.location.origin,
-          'X-Title': 'tapestrAI',
+          'X-Title': 'TapestrAI',  // FIXED: Use plain ASCII only
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(requestBody)
