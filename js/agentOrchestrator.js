@@ -1,7 +1,7 @@
 /**
- * tapestrAI v3.6.4 - Agent Orchestrator
+ * tapestrAI v3.6.6 - Agent Orchestrator
  * Coordinates multiple AI agents for comprehensive analysis
- * Last updated: 2025-01-05 17:15 EST
+ * Last updated: 2025-01-05 17:45 EST
  */
 
 class AgentOrchestrator {

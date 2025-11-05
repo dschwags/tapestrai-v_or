@@ -1,7 +1,7 @@
 /**
- * tapestrAI v3.6.4 - Progress UI
+ * tapestrAI v3.6.6 - Progress UI
  * Manages progress tracking and loading states during analysis
- * Last updated: 2025-01-05 17:15 EST
+ * Last updated: 2025-01-05 17:45 EST
  */
 
 class ProgressUI {

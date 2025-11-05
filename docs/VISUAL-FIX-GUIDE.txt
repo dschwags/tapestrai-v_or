@@ -1,0 +1,147 @@
+╔═══════════════════════════════════════════════════════════════════════════╗
+║             NON-ASCII CHARACTER ERROR - VISUAL FIX GUIDE                  ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+THE PROBLEM:
+────────────────────────────────────────────────────────────────────────────
+Error: "String contains non ISO-8859-1 code point"
+
+This means: You have a character that isn't plain ASCII in your headers.
+
+
+WHAT YOU NEED TO CHANGE:
+────────────────────────────────────────────────────────────────────────────
+
+Location 1: Line ~380
+Location 2: Line ~771
+
+Both have the same line that needs fixing:
+
+    'X-Title': 'TapestrAI',
+
+
+VISUAL COMPARISON:
+────────────────────────────────────────────────────────────────────────────
+
+❌ WRONG (May have hidden special characters):
+    'X-Title': 'TapestrAI',
+     ^       ^  ^         ^
+     These quotes might be "smart quotes" (Unicode)
+
+
+✅ CORRECT (Plain ASCII only):
+    'X-Title': 'tapestrAI',
+     ^       ^  ^         ^
+     These are straight quotes from your keyboard
+
+
+KEY DIFFERENCES:
+────────────────────────────────────────────────────────────────────────────
+
+1. App Name:  TapestrAI  →  tapestrAI  (lowercase 't')
+2. Quotes:    ''        →  ''         (straight, not curly)
+3. Make sure: No special apostrophes or hidden Unicode characters
+
+
+HOW TO FIX IT:
+────────────────────────────────────────────────────────────────────────────
+
+Step 1: Open apiKeyManager.js
+
+Step 2: Find this line (appears TWICE in the file):
+        'X-Title': 'TapestrAI',
+
+Step 3: Delete the entire line
+
+Step 4: Type this NEW line (don't copy/paste):
+        'X-Title': 'tapestrAI',
+                    └─────────┘
+                    Type this exactly using
+                    your keyboard apostrophe key
+
+Step 5: Save the file
+
+Step 6: Hard refresh browser (Ctrl+Shift+R)
+
+Step 7: Test OpenRouter key again
+
+
+EXACT LOCATIONS TO FIX:
+────────────────────────────────────────────────────────────────────────────
+
+📍 LOCATION 1 (Line ~380 in testKey function):
+
+case 'openrouter':
+  response = await fetch(config.endpoint, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${key}`,
+      'HTTP-Referer': window.location.origin,
+      'X-Title': 'tapestrAI',  ← FIX THIS LINE
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: config.models.fast,
+      messages: [{ role: 'user', content: config.testPrompt }],
+      max_tokens: 10
+    })
+  });
+  break;
+
+
+📍 LOCATION 2 (Line ~771 in analyzeWithOpenRouter function):
+
+const response = await fetch(config.endpoint, {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${this.keys.openrouter}`,
+    'HTTP-Referer': window.location.origin,
+    'X-Title': 'tapestrAI',  ← FIX THIS LINE
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(requestBody)
+});
+
+
+CHARACTER REFERENCE:
+────────────────────────────────────────────────────────────────────────────
+
+✅ USE THESE (ASCII - Safe):
+   '  Regular apostrophe (keyboard key)
+   "  Regular double quote
+
+❌ DON'T USE THESE (Unicode - Breaks headers):
+   '  Left single quotation mark (U+2018)
+   '  Right single quotation mark (U+2019)
+   "  Left double quotation mark (U+201C)
+   "  Right double quotation mark (U+201D)
+
+
+TESTING:
+────────────────────────────────────────────────────────────────────────────
+
+Before Fix:
+  ❌ TypeError: String contains non ISO-8859-1 code point
+  ❌ API test failed
+
+After Fix:
+  ✅ openrouter response status: 200
+  ✅ OpenRouter API key test successful!
+
+
+NUCLEAR OPTION (If nothing works):
+────────────────────────────────────────────────────────────────────────────
+
+Just delete the X-Title line entirely:
+
+headers: {
+  'Authorization': `Bearer ${key}`,
+  'HTTP-Referer': window.location.origin,
+  // Remove the X-Title line completely
+  'Content-Type': 'application/json'
+},
+
+OpenRouter works without it! (But you won't appear on leaderboards)
+
+
+═══════════════════════════════════════════════════════════════════════════

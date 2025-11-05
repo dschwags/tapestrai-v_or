@@ -1,7 +1,7 @@
 /**
- * tapestrAI v3.6.4 - API Key Manager
+ * tapestrAI v3.6.6 - API Key Manager
  * Manages API keys for 6 AI providers (including OpenRouter) with encrypted storage
- * Last updated: 2025-01-05 17:15 EST
+ * Last updated: 2025-01-05 17:45 EST
  */
 
 class APIKeyManager {
@@ -377,7 +377,7 @@ class APIKeyManager {
             headers: {
               'Authorization': `Bearer ${key}`,
               'HTTP-Referer': window.location.origin,
-              'X-Title': 'TapestrAI',  // FIXED: Use plain ASCII only
+              'X-Title': 'tapestrAI',
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
@@ -768,7 +768,7 @@ class APIKeyManager {
         headers: {
           'Authorization': `Bearer ${this.keys.openrouter}`,
           'HTTP-Referer': window.location.origin,
-          'X-Title': 'TapestrAI',  // FIXED: Use plain ASCII only
+          'X-Title': 'tapestrAI',
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(requestBody)

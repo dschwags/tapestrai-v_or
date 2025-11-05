@@ -1,7 +1,7 @@
 /**
- * tapestrAI v3.6.4 - Error Handler
+ * tapestrAI v3.6.6 - Error Handler
  * Comprehensive error handling and recovery system
- * Last updated: 2025-01-05 17:15 EST
+ * Last updated: 2025-01-05 17:45 EST
  */
 
 class ErrorHandler {

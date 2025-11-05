@@ -1,7 +1,7 @@
 /**
- * tapestrAI v3.6.4 - Token Tracker
+ * tapestrAI v3.6.6 - Token Tracker
  * Monitor API token usage and quotas
- * Last updated: 2025-01-05 17:15 EST
+ * Last updated: 2025-01-05 17:45 EST
  */
 
 class TokenTracker {

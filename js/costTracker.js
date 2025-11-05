@@ -1,7 +1,7 @@
 /**
- * tapestrAI v3.6.4 - Cost Tracker
+ * tapestrAI v3.6.6 - Cost Tracker
  * Tracks API usage and costs across all providers
- * Last updated: 2025-01-05 17:15 EST
+ * Last updated: 2025-01-05 17:45 EST
  */
 
 class CostTracker {
