@@ -81,6 +81,35 @@ class APIKeyManager {
         instructions: 'Get free API key from DeepSeek Platform. 5M tokens/day free for 30 days! Ultra-low cost after: $0.14/1M input tokens.',
         testPrompt: 'Respond with just "success"',
         costPer1kTokens: 0.00014 // Input cost - 100x cheaper than OpenAI!
+      },
+      
+      openrouter: {
+        name: 'OpenRouter',
+        required: false,
+        endpoint: 'https://openrouter.ai/api/v1/chat/completions',
+        icon: '🚀',
+        color: '#10B981',
+        getKeyUrl: 'https://openrouter.ai/keys',
+        instructions: 'One key for 100+ AI models. Free tier: 10 requests/day. Works everywhere, no proxy needed!',
+        testPrompt: 'Respond with just "success"',
+        costPer1kTokens: 0.00002, // Using Gemini as default for cost estimate
+        
+        // Available models for different tasks
+        models: {
+          // Fast & Free (for quick analysis)
+          'fast': 'google/gemini-2.0-flash-exp',
+          'budget': 'deepseek/deepseek-chat',
+          
+          // Balanced (for main analysis)
+          'balanced': 'anthropic/claude-sonnet-4',
+          'general': 'openai/gpt-4-turbo',
+          
+          // Specialized (for specific tasks)
+          'vision': 'anthropic/claude-3-opus',
+          'research': 'perplexity/sonar-pro',
+          'creative': 'anthropic/claude-3-opus',
+          'technical': 'deepseek/deepseek-chat'
+        }
       }
     };
     
@@ -341,6 +370,23 @@ class APIKeyManager {
             })
           });
           break;
+          
+        case 'openrouter':
+          response = await fetch(config.endpoint, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${key}`,
+              'HTTP-Referer': window.location.origin,
+              'X-Title': 'tapestrAI',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              model: config.models.fast, // Use free Gemini model for testing
+              messages: [{ role: 'user', content: config.testPrompt }],
+              max_tokens: 10
+            })
+          });
+          break;
       }
       
       if (!response) {
@@ -415,7 +461,8 @@ class APIKeyManager {
                           config.name === 'OpenAI' ? 'sk-...' :
                           config.name === 'Anthropic Claude' ? 'sk-ant-...' :
                           config.name === 'Perplexity AI' ? 'pplx-...' :
-                          config.name === 'DeepSeek' ? 'sk-...' : '';
+                          config.name === 'DeepSeek' ? 'sk-...' :
+                          config.name === 'OpenRouter' ? 'sk-or-v1-...' : '';
     }
     
     this.showNotification('info', 
@@ -493,22 +540,23 @@ class APIKeyManager {
     const count = Object.keys(this.keys).length;
     
     const levels = {
-      0: { stars: '', name: 'Not Configured', description: 'Add Gemini API key to begin' },
+      0: { stars: '', name: 'Not Configured', description: 'Add Gemini or OpenRouter API key to begin' },
       1: { stars: '⭐', name: 'Basic Analysis', description: 'Single-agent material examination' },
       2: { stars: '⭐⭐', name: 'Enhanced Analysis', description: 'Cross-verified insights' },
       3: { stars: '⭐⭐⭐', name: 'Comprehensive Analysis', description: 'Multi-perspective research' },
       4: { stars: '⭐⭐⭐⭐', name: 'Professional Analysis', description: 'Expert-level synthesis' },
-      5: { stars: '⭐⭐⭐⭐⭐', name: 'Elite Analysis', description: 'Full AI research team activated' }
+      5: { stars: '⭐⭐⭐⭐⭐', name: 'Elite Analysis', description: 'Full AI research team activated' },
+      6: { stars: '⭐⭐⭐⭐⭐🎉', name: 'Ultimate Analysis', description: 'Complete AI arsenal with unified routing' }
     };
     
     return levels[count] || levels[0];
   }
   
   /**
-   * Check if analysis can proceed (Gemini key required)
+   * Check if analysis can proceed (Gemini or OpenRouter key required)
    */
   canAnalyze() {
-    return !!this.keys.gemini;
+    return !!(this.keys.gemini || this.keys.openrouter);
   }
   
   /**
@@ -658,8 +706,118 @@ class APIKeyManager {
                           config.name === 'OpenAI' ? 'sk-...' :
                           config.name === 'Anthropic Claude' ? 'sk-ant-...' :
                           config.name === 'Perplexity AI' ? 'pplx-...' :
-                          config.name === 'DeepSeek' ? 'sk-...' : '';
+                          config.name === 'DeepSeek' ? 'sk-...' :
+                          config.name === 'OpenRouter' ? 'sk-or-v1-...' : '';
     }
+  }
+  
+  /**
+   * Analyze using OpenRouter with specific model selection
+   * @param {string} imageData - Base64 image data
+   * @param {string} prompt - Analysis prompt
+   * @param {string} taskType - Type of task: 'fast', 'balanced', 'vision', 'research', etc.
+   * @param {object} options - Additional options (fallback, streaming, etc.)
+   */
+  async analyzeWithOpenRouter(imageData, prompt, taskType = 'balanced', options = {}) {
+    if (!this.keys.openrouter) {
+      throw new Error('OpenRouter API key not configured');
+    }
+    
+    const config = this.providers.openrouter;
+    const model = config.models[taskType] || config.models.balanced;
+    
+    // Build request
+    const requestBody = {
+      model: model,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'text', text: prompt },
+          { 
+            type: 'image_url', 
+            image_url: { 
+              url: imageData.startsWith('data:') ? imageData : `data:image/jpeg;base64,${imageData}`
+            } 
+          }
+        ]
+      }],
+      temperature: options.temperature || 0.4,
+      max_tokens: options.maxTokens || 4096
+    };
+    
+    // Add fallback models if requested
+    if (options.fallback) {
+      requestBody.models = [
+        config.models.budget,   // Try cheapest first
+        model,                  // Then requested model
+        config.models.balanced  // Finally fallback to balanced
+      ];
+      requestBody.route = 'fallback';
+    }
+    
+    try {
+      const response = await fetch(config.endpoint, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.keys.openrouter}`,
+          'HTTP-Referer': window.location.origin,
+          'X-Title': 'tapestrAI',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      });
+      
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.error?.message || `API request failed: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      // Track usage
+      if (data.usage && window.costTracker) {
+        window.costTracker.trackCall(
+          'openrouter',
+          data.usage.prompt_tokens || 0,
+          data.usage.completion_tokens || 0,
+          data.model || model
+        );
+      }
+      
+      return {
+        text: data.choices[0].message.content,
+        model: data.model, // Which model actually responded
+        usage: data.usage,
+        cost: this.calculateOpenRouterCost(data.usage, data.model)
+      };
+      
+    } catch (error) {
+      console.error('OpenRouter analysis failed:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Calculate cost for OpenRouter analysis
+   */
+  calculateOpenRouterCost(usage, model) {
+    if (!usage) return 0;
+    
+    // Approximate costs (OpenRouter charges same as providers)
+    const costs = {
+      'google/gemini-2.0-flash-exp': { input: 0.00002, output: 0.00006 },
+      'deepseek/deepseek-chat': { input: 0.00014, output: 0.00028 },
+      'anthropic/claude-sonnet-4': { input: 0.003, output: 0.015 },
+      'anthropic/claude-3-opus': { input: 0.015, output: 0.075 },
+      'openai/gpt-4-turbo': { input: 0.01, output: 0.03 },
+      'perplexity/sonar-pro': { input: 0.001, output: 0.001 }
+    };
+    
+    const pricing = costs[model] || { input: 0.001, output: 0.002 };
+    const inputCost = (usage.prompt_tokens / 1000) * pricing.input;
+    const outputCost = (usage.completion_tokens / 1000) * pricing.output;
+    
+    return inputCost + outputCost;
   }
   
   /**

@@ -58,7 +58,8 @@ class CostTracker {
       openai: { input: 10 / 1000000, output: 30 / 1000000 },
       anthropic: { input: 3 / 1000000, output: 15 / 1000000 },
       perplexity: { input: 1 / 1000000, output: 1 / 1000000 },
-      deepseek: { input: 0.14 / 1000000, output: 0.28 / 1000000 } // 100x cheaper than OpenAI!
+      deepseek: { input: 0.14 / 1000000, output: 0.28 / 1000000 }, // 100x cheaper than OpenAI!
+      openrouter: { input: 0.02 / 1000000, output: 0.06 / 1000000 } // Uses Gemini by default, varies by model
     };
     
     const rate = rates[provider] || { input: 0, output: 0 };
@@ -163,7 +164,8 @@ class CostTracker {
       'OpenAI Cost',
       'Claude Cost',
       'Perplexity Cost',
-      'DeepSeek Cost'
+      'DeepSeek Cost',
+      'OpenRouter Cost'
     ];
     
     const rows = this.history.map(analysis => {
@@ -182,7 +184,8 @@ class CostTracker {
         (analysis.providers.openai?.cost || 0).toFixed(4),
         (analysis.providers.anthropic?.cost || 0).toFixed(4),
         (analysis.providers.perplexity?.cost || 0).toFixed(4),
-        (analysis.providers.deepseek?.cost || 0).toFixed(4)
+        (analysis.providers.deepseek?.cost || 0).toFixed(4),
+        (analysis.providers.openrouter?.cost || 0).toFixed(4)
       ];
     });
     

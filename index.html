@@ -9,15 +9,15 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Puter.js SDK -->
-    <script src="https://js.puter.com/v2/"></script>
+    <!-- Puter.js SDK (Temporarily Disabled) -->
+    <!-- <script src="https://js.puter.com/v2/"></script> -->
     
     <!-- Custom Styles -->
     <link rel="stylesheet" href="css/styles.css">
     
     <!-- JavaScript Modules -->
-    <script src="js/puterIntegration.js" defer></script>
-    <script src="js/puterAIProvider.js" defer></script>
+    <!-- <script src="js/puterIntegration.js" defer></script> -->
+    <!-- <script src="js/puterAIProvider.js" defer></script> -->
     <script src="js/apiKeyManager.js" defer></script>
     <script src="js/imageProcessor.js" defer></script>
     <script src="js/universalAnalyzer.js" defer></script>
@@ -38,7 +38,7 @@
                 <div class="flex items-center gap-2">
                     <span class="text-sm">🔑</span>
                     <span class="text-xs sm:text-sm font-medium text-gray-700">API Keys:</span>
-                    <span id="keys-configured-count" class="text-xs sm:text-sm font-bold text-brand">0/5</span>
+                    <span id="keys-configured-count" class="text-xs sm:text-sm font-bold text-brand">0/6</span>
                 </div>
                 <div class="h-3 w-px bg-gray-300 hidden sm:block"></div>
                 <div class="flex items-center gap-2">
@@ -153,59 +153,10 @@
                         <!-- End quickstart-content -->
                     </div>
                     
-                    <!-- Puter.js Easy Mode (NEW!) -->
-                    <div id="puter-auth-section" class="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 rounded-xl p-4 mb-6">
-                        <div class="flex items-start gap-3 mb-3">
-                            <span class="text-3xl">✨</span>
-                            <div class="flex-1">
-                                <h3 class="text-lg font-bold text-gray-900 mb-1">Try the Easy Way!</h3>
-                                <p class="text-sm text-gray-700 mb-3">
-                                    Skip the API key hassle. Sign in with <strong>Puter</strong> for instant access to all AI models.
-                                    No credit cards, no configuration—just one click.
-                                </p>
-                                <div id="puter-signed-out" class="">
-                                    <button 
-                                        onclick="handlePuterSignIn()" 
-                                        class="btn btn-primary flex items-center gap-2">
-                                        <span>🚀</span>
-                                        <span>Sign in with Puter</span>
-                                    </button>
-                                    <p class="text-xs text-gray-600 mt-2">
-                                        🔒 Privacy-focused • 🌐 Open-source platform • 🆓 Free tier included
-                                    </p>
-                                </div>
-                                <div id="puter-signed-in" class="hidden">
-                                    <div class="flex items-center gap-3 mb-2">
-                                        <div class="flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-purple-300">
-                                            <span class="text-lg">👤</span>
-                                            <span id="puter-username" class="font-semibold text-gray-900"></span>
-                                            <span class="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">Connected</span>
-                                        </div>
-                                        <button 
-                                            onclick="handlePuterSignOut()" 
-                                            class="text-sm text-gray-600 hover:text-gray-900 underline">
-                                            Sign out
-                                        </button>
-                                    </div>
-                                    <p class="text-sm text-green-700 font-medium">
-                                        ✅ Ready to analyze! All AI models are now available.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="text-xs text-gray-600 bg-white/50 rounded p-2">
-                            <strong>About Puter:</strong> A free, open-source cloud platform that provides AI access without managing individual API keys.
-                            <a href="https://puter.com" target="_blank" class="text-purple-600 hover:underline">Learn more →</a>
-                        </div>
-                    </div>
-                    
-                    <div class="text-center mb-4">
-                        <div class="flex items-center gap-2 justify-center">
-                            <div class="h-px bg-gray-300 flex-1"></div>
-                            <span class="text-sm text-gray-500 font-medium">OR use your own API keys</span>
-                            <div class="h-px bg-gray-300 flex-1"></div>
-                        </div>
-                    </div>
+                    <!-- Puter.js Easy Mode (Temporarily Disabled) -->
+                    <!-- <div id="puter-auth-section" class="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 rounded-xl p-4 mb-6" style="display: none;">
+                        ...
+                    </div> -->
                     
                     <p class="text-gray-600 mb-4">Add API keys to unlock more powerful analysis. <em>At least one API key required (any provider works!).</em></p>
 
@@ -525,6 +476,67 @@
                             <div class="text-xs text-gray-600">
                                 <strong>5M tokens/day FREE for 30 days!</strong> • 
                                 <a href="https://platform.deepseek.com/api_keys" target="_blank" class="text-blue-500 hover:underline">Get key →</a>
+                            </div>
+                        </div>
+                        
+                        <!-- OpenRouter (Recommended - All-in-One) -->
+                        <div class="provider-card bg-gradient-to-br from-green-50 to-blue-50 border-2 border-green-300">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="text-2xl font-bold" style="color: #10B981; width: 24px; display: inline-block; text-align: center;">❶</span>
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-1 flex-wrap">
+                                        <h3 class="font-bold text-base">OpenRouter</h3>
+                                        <span class="badge bg-green-500 text-white text-[10px] px-1.5">⭐ RECOMMENDED</span>
+                                        <div class="api-status-badge" id="openrouter-status-badge" data-provider="openrouter">
+                                            <span class="status-text" id="openrouter-status-text">○ Not Set</span>
+                                            <button class="status-menu-btn hidden" id="openrouter-menu-btn" onclick="toggleStatusMenu('openrouter')" title="Manage key">⋮</button>
+                                            <div class="status-menu hidden" id="openrouter-menu">
+                                                <button onclick="editAPIKey('openrouter')" class="menu-item">✏️ Edit Key</button>
+                                                <button onclick="removeAPIKey('openrouter')" class="menu-item text-red-600">🗑️ Remove</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p class="text-xs text-gray-600">All-in-one: 100+ models, no CORS issues</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex gap-1 mb-2">
+                            <input 
+                                type="password" 
+                                id="openrouter-key-input" 
+                                placeholder="sk-or-v1-..."
+                                class="input-field flex-1"
+                                autocomplete="off"
+                                onfocus="handleKeyInputFocus('openrouter')"
+                                onblur="handleKeyInputBlur('openrouter')"
+                            />
+                            <button 
+                                class="eyeball-toggle text-lg px-2" 
+                                onclick="toggleKeyVisibility('openrouter')"
+                                title="Show/Hide key">
+                                👁️
+                            </button>
+                            <button 
+                                class="btn btn-success text-xs px-2 py-1 whitespace-nowrap" 
+                                id="openrouter-test-btn"
+                                onclick="saveAPIKey('openrouter')">
+                                Test & Save
+                            </button>
+                            </div>
+                            
+                            <div class="text-xs text-gray-600 bg-white/60 rounded p-2 mb-2">
+                                <strong>🎉 Why OpenRouter?</strong><br>
+                                • One key for ALL models (Gemini, GPT-4, Claude, etc.)<br>
+                                • Works everywhere - no proxy needed!<br>
+                                • 10 free requests/day to try<br>
+                                • Simpler than managing 5+ keys
+                            </div>
+                            
+                            <div class="text-xs text-gray-600">
+                                <a href="https://openrouter.ai/keys" target="_blank" class="text-green-600 font-semibold hover:underline">
+                                    Get FREE key →
+                                </a>
+                                <span class="ml-1">No credit card for trial</span>
                             </div>
                         </div>
                     </div>
@@ -972,49 +984,16 @@
             }
         }
 
-        // Puter.js Integration Handlers
+        // Puter.js Integration Handlers (Temporarily Disabled)
+        /*
         async function handlePuterSignIn() {
-            try {
-                if (!window.puterIntegration) {
-                    alert('❌ Puter integration not loaded. Please refresh the page.');
-                    return;
-                }
-                
-                console.log('🔐 Signing in with Puter...');
-                const user = await window.puterIntegration.signIn();
-                
-                if (user) {
-                    // Update UI
-                    document.getElementById('puter-signed-out').classList.add('hidden');
-                    document.getElementById('puter-signed-in').classList.remove('hidden');
-                    document.getElementById('puter-username').textContent = user.username;
-                    
-                    console.log('✅ Puter sign-in successful:', user.username);
-                    alert(`🎉 Welcome, ${user.username}! You can now analyze artifacts using Puter AI.`);
-                }
-            } catch (error) {
-                console.error('❌ Puter sign-in failed:', error);
-                alert(`❌ Sign-in failed: ${error.message}`);
-            }
+            // Disabled
         }
         
         async function handlePuterSignOut() {
-            try {
-                if (!window.puterIntegration) return;
-                
-                await window.puterIntegration.signOut();
-                
-                // Update UI
-                document.getElementById('puter-signed-out').classList.remove('hidden');
-                document.getElementById('puter-signed-in').classList.add('hidden');
-                document.getElementById('puter-username').textContent = '';
-                
-                console.log('👋 Signed out from Puter');
-            } catch (error) {
-                console.error('❌ Puter sign-out failed:', error);
-                alert(`❌ Sign-out failed: ${error.message}`);
-            }
+            // Disabled
         }
+        */
 
         function toggleKeyVisibility(provider) {
             const input = document.getElementById(`${provider}-key-input`);
@@ -1453,45 +1432,12 @@
             }
         }
         
-        // Initialize Puter integration on page load
+        // Initialize Puter integration on page load (Temporarily Disabled)
+        /*
         document.addEventListener('DOMContentLoaded', async function() {
-            console.log('🌐 Page loaded, initializing Puter integration...');
-            
-            // Wait for Puter SDK to load
-            let attempts = 0;
-            const maxAttempts = 10;
-            
-            const waitForPuter = setInterval(async () => {
-                attempts++;
-                
-                if (window.PuterIntegration && PuterIntegration.isPuterAvailable()) {
-                    clearInterval(waitForPuter);
-                    
-                    try {
-                        // Initialize Puter integration
-                        window.puterIntegration = new PuterIntegration();
-                        await window.puterIntegration.init();
-                        
-                        // Check if user is already signed in
-                        const authStatus = window.puterIntegration.getAuthStatus();
-                        if (authStatus.isAuthenticated) {
-                            // Update UI to show signed-in state
-                            document.getElementById('puter-signed-out').classList.add('hidden');
-                            document.getElementById('puter-signed-in').classList.remove('hidden');
-                            document.getElementById('puter-username').textContent = authStatus.user.username;
-                            console.log('✅ User already signed in:', authStatus.user.username);
-                        }
-                        
-                        console.log('✅ Puter integration initialized successfully');
-                    } catch (error) {
-                        console.error('❌ Failed to initialize Puter:', error);
-                    }
-                } else if (attempts >= maxAttempts) {
-                    clearInterval(waitForPuter);
-                    console.warn('⚠️  Puter SDK failed to load after', maxAttempts, 'attempts');
-                }
-            }, 500);
+            // Puter integration disabled
         });
+        */
     </script>
 
 </body>
