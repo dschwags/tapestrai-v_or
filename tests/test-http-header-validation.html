@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BugX - HTTP Header Validation Tests</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .info-box {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+
+        .info-box h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .info-box ul {
+            margin-left: 20px;
+            color: #555;
+        }
+
+        .info-box li {
+            margin: 8px 0;
+        }
+
+        .test-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        #console-output {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            max-height: 600px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        #console-output:empty::before {
+            content: 'Click "Run Tests" to start...';
+            color: #888;
+            font-style: italic;
+        }
+
+        .test-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-card.passed {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border: 2px solid #28a745;
+        }
+
+        .stat-card.failed {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            border: 2px solid #dc3545;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .loading {
+            display: inline-block;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .badge-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .badge-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .badge-warning {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+            font-size: 0.9em;
+        }
+
+        /* Console output styling */
+        #console-output .success { color: #4ade80; }
+        #console-output .error { color: #f87171; }
+        #console-output .warning { color: #fbbf24; }
+        #console-output .info { color: #60a5fa; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 HTTP Header Validation Tests</h1>
+            <p>BugX Test Suite - ASCII & ISO-8859-1 Compliance</p>
+        </div>
+
+        <div class="content">
+            <div class="info-box">
+                <h3>📋 What This Tests</h3>
+                <ul>
+                    <li><strong>ASCII Compliance:</strong> Ensures HTTP headers contain only ASCII characters (0-127)</li>
+                    <li><strong>ISO-8859-1 Validation:</strong> Detects characters that cause "non ISO-8859-1 code point" errors</li>
+                    <li><strong>Smart Quote Detection:</strong> Identifies problematic characters like ' ' " " — –</li>
+                    <li><strong>OpenRouter Headers:</strong> Validates X-Title and other headers used in API calls</li>
+                    <li><strong>Error Prevention:</strong> Provides utilities to detect and sanitize header values</li>
+                </ul>
+            </div>
+
+            <div class="test-controls">
+                <button class="btn btn-primary" onclick="runTests()">
+                    <span id="run-icon">▶️</span>
+                    <span id="run-text">Run Tests</span>
+                </button>
+                <button class="btn btn-secondary" onclick="clearConsole()">
+                    🗑️ Clear Console
+                </button>
+                <button class="btn btn-secondary" onclick="copyResults()">
+                    📋 Copy Results
+                </button>
+            </div>
+
+            <div id="test-summary" class="test-summary" style="display: none;">
+                <div class="stat-card">
+                    <div class="stat-label">Total Tests</div>
+                    <div class="stat-value" id="stat-total">0</div>
+                </div>
+                <div class="stat-card passed">
+                    <div class="stat-label">Passed</div>
+                    <div class="stat-value" id="stat-passed">0</div>
+                </div>
+                <div class="stat-card failed">
+                    <div class="stat-label">Failed</div>
+                    <div class="stat-value" id="stat-failed">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Pass Rate</div>
+                    <div class="stat-value" id="stat-rate">0%</div>
+                </div>
+            </div>
+
+            <h3 style="margin: 20px 0 10px 0;">
+                Console Output
+                <span id="status-badge"></span>
+            </h3>
+            <div id="console-output"></div>
+        </div>
+
+        <div class="footer">
+            <p>tapestrAI v3.6.6 | BugX Testing Framework</p>
+            <p>Built with 💜 by D. Schwager / BrewX</p>
+        </div>
+    </div>
+
+    <!-- Load dependencies -->
+    <script src="bugx-framework.js"></script>
+    <script src="../js/apiKeyManager.js"></script>
+    <script src="../js/imageProcessor.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/agentOrchestrator.js"></script>
+    <script src="../js/costTracker.js"></script>
+    <script src="../js/progressUI.js"></script>
+    <script src="../js/errorHandler.js"></script>
+    <script src="../js/universalAnalyzer.js"></script>
+    
+    <!-- Load tests -->
+    <script src="bugx-http-header-validation.js"></script>
+
+    <script>
+        // Intercept console output
+        const consoleOutput = document.getElementById('console-output');
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+
+        function appendToConsole(message, type = 'log') {
+            const span = document.createElement('span');
+            span.className = type;
+            span.textContent = message + '\n';
+            consoleOutput.appendChild(span);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            appendToConsole(args.join(' '), 'info');
+        };
+
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            appendToConsole(args.join(' '), 'error');
+        };
+
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            appendToConsole(args.join(' '), 'warning');
+        };
+
+        // Test runner
+        async function runTests() {
+            const runBtn = document.querySelector('.btn-primary');
+            const runIcon = document.getElementById('run-icon');
+            const runText = document.getElementById('run-text');
+            const statusBadge = document.getElementById('status-badge');
+            const summaryDiv = document.getElementById('test-summary');
+
+            // Update button state
+            runBtn.disabled = true;
+            runIcon.textContent = '⏳';
+            runIcon.classList.add('loading');
+            runText.textContent = 'Running...';
+            statusBadge.innerHTML = '<span class="badge badge-warning">Running...</span>';
+
+            // Clear previous output
+            consoleOutput.innerHTML = '';
+            summaryDiv.style.display = 'none';
+
+            try {
+                // Run tests
+                const results = await window.BugX.runAll();
+
+                // Update summary
+                document.getElementById('stat-total').textContent = results.total;
+                document.getElementById('stat-passed').textContent = results.passed;
+                document.getElementById('stat-failed').textContent = results.failed;
+                
+                const passRate = results.total > 0 ? 
+                    ((results.passed / results.total) * 100).toFixed(1) : 0;
+                document.getElementById('stat-rate').textContent = passRate + '%';
+
+                summaryDiv.style.display = 'grid';
+
+                // Update status badge
+                if (results.failed === 0) {
+                    statusBadge.innerHTML = '<span class="badge badge-success">✅ All Passed</span>';
+                } else {
+                    statusBadge.innerHTML = `<span class="badge badge-danger">❌ ${results.failed} Failed</span>`;
+                }
+
+            } catch (error) {
+                console.error('Test execution error:', error);
+                statusBadge.innerHTML = '<span class="badge badge-danger">⚠️ Error</span>';
+            } finally {
+                // Reset button
+                runBtn.disabled = false;
+                runIcon.classList.remove('loading');
+                runIcon.textContent = '▶️';
+                runText.textContent = 'Run Tests';
+            }
+        }
+
+        function clearConsole() {
+            consoleOutput.innerHTML = '';
+            document.getElementById('status-badge').innerHTML = '';
+            document.getElementById('test-summary').style.display = 'none';
+        }
+
+        function copyResults() {
+            const text = consoleOutput.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Results copied to clipboard!');
+            });
+        }
+
+        // Prevent auto-run on load for this test
+        window.removeEventListener('load', window.BugX.runAll);
+    </script>
+</body>
+</html>
