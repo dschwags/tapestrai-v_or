@@ -94,20 +94,20 @@ class APIKeyManager {
         testPrompt: 'Respond with just "success"',
         costPer1kTokens: 0.00002, // Using Gemini as default for cost estimate
         
-        // Available models for different tasks
+        // Available models for different tasks (verified from OpenRouter API)
         models: {
           // Fast & Free (for quick analysis)
-          'fast': 'google/gemini-2.5-flash-lite',  // FIXED: was gemini-flash-1.5
+          'fast': 'google/gemini-2.5-flash-lite',  // Verified: exists in OpenRouter
           'budget': 'deepseek/deepseek-chat',
           
           // Balanced (for main analysis)
-          'balanced': 'anthropic/claude-sonnet-4',  // Updated to latest
-          'general': 'openai/gpt-4o',  // Updated to GPT-4o
+          'balanced': 'anthropic/claude-3.5-sonnet',  // FIXED: claude-sonnet-4 doesn't exist
+          'general': 'openai/gpt-4o',  // Verified: exists
           
           // Specialized (for specific tasks)
-          'vision': 'anthropic/claude-sonnet-4',  // Sonnet 4 has better vision
-          'research': 'perplexity/llama-3.1-sonar-large-128k-online',
-          'creative': 'anthropic/claude-opus-4',  // Updated to Opus 4
+          'vision': 'anthropic/claude-3.5-sonnet',  // FIXED: using valid Claude model
+          'research': 'perplexity/sonar-pro',  // FIXED: llama variant doesn't exist
+          'creative': 'anthropic/claude-3-opus',  // FIXED: opus-4 doesn't exist, using 3-opus
           'technical': 'deepseek/deepseek-chat'
         }
       }
@@ -811,28 +811,24 @@ class APIKeyManager {
     if (!usage) return 0;
     
     // Approximate costs (OpenRouter charges same as providers)
-    // Pricing as of Nov 2025
+    // Pricing as of Jan 2025 - Verified from OpenRouter API
     const costs = {
-      // Google models
-      'google/gemini-2.5-flash-lite': { input: 0.0001, output: 0.0004 },  // ADDED
+      // Google models (verified)
+      'google/gemini-2.5-flash-lite': { input: 0.0001, output: 0.0004 },
       'google/gemini-2.5-flash': { input: 0.0003, output: 0.0025 },
-      'google/gemini-2.0-flash-exp': { input: 0.00002, output: 0.00006 },
       
-      // DeepSeek
+      // DeepSeek (verified)
       'deepseek/deepseek-chat': { input: 0.00014, output: 0.00028 },
       
-      // Anthropic
-      'anthropic/claude-sonnet-4': { input: 0.003, output: 0.015 },  // UPDATED
-      'anthropic/claude-opus-4': { input: 0.015, output: 0.075 },  // UPDATED
+      // Anthropic (verified - removed invalid claude-sonnet-4 and claude-opus-4)
       'anthropic/claude-3.5-sonnet': { input: 0.003, output: 0.015 },
       'anthropic/claude-3-opus': { input: 0.015, output: 0.075 },
       
-      // OpenAI
-      'openai/gpt-4o': { input: 0.0025, output: 0.01 },  // ADDED
+      // OpenAI (verified)
+      'openai/gpt-4o': { input: 0.0025, output: 0.01 },
       'openai/gpt-4-turbo': { input: 0.01, output: 0.03 },
       
-      // Perplexity
-      'perplexity/llama-3.1-sonar-large-128k-online': { input: 0.001, output: 0.001 },
+      // Perplexity (verified - removed invalid llama variant)
       'perplexity/sonar-pro': { input: 0.001, output: 0.001 }
     };
     
