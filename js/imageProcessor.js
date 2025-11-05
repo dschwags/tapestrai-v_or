@@ -1,6 +1,7 @@
 /**
- * tapestrAI v3.0 - Image Processor
+ * tapestrAI v3.6.4 - Image Processor
  * Handles image upload, compression, optimization, and validation
+ * Last updated: 2025-01-05 17:15 EST
  */
 
 class ImageProcessor {

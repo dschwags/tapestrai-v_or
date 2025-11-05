@@ -1,7 +1,7 @@
 /**
- * tapestrAI v3.1.0 - API Key Manager (with DeepSeek)
- * Manages API keys for 5 AI providers with encrypted storage
- * Last updated: 2025-10-31 00:28 EDT
+ * tapestrAI v3.6.4 - API Key Manager
+ * Manages API keys for 6 AI providers (including OpenRouter) with encrypted storage
+ * Last updated: 2025-01-05 17:15 EST
  */
 
 class APIKeyManager {

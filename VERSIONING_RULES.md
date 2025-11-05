@@ -28,13 +28,37 @@ This ensures:
 
 **Location 1: Header comment (Line ~7)**
 ```html
-<!-- Version: 3.6.1 - API Key Management & Error Logging: Fixed removeAPIKey function, enhanced OpenRouter error logging | Build: 2025-01-05 15:45 EST -->
+<!-- Version: 3.6.4 - Description | Build: 2025-01-05 17:15 EST -->
 ```
 
 **Location 2: Footer (Line ~943)**
 ```html
-v3.6.1 • Build 2025-01-05 15:45 EST
+v3.6.4 • Build 2025-01-05 17:15 EST
 ```
+
+### 2. **ALL JavaScript Files** (Header comment)
+
+**Every JavaScript file must have a version header:**
+
+```javascript
+/**
+ * tapestrAI v3.6.4 - [Module Name]
+ * [Brief description of module purpose]
+ * Last updated: 2025-01-05 17:15 EST
+ */
+```
+
+**Files that must be updated:**
+- `js/apiKeyManager.js`
+- `js/main.js`
+- `js/imageProcessor.js`
+- `js/agentOrchestrator.js`
+- `js/costTracker.js`
+- `js/progressUI.js`
+- `js/errorHandler.js`
+- `js/universalAnalyzer.js`
+- `js/tokenTracker.js`
+- Any other `.js` files in the project
 
 ---
 

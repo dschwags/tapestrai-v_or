@@ -1,6 +1,7 @@
 /**
- * tapestrAI v3.0 - Main Application Controller
+ * tapestrAI v3.6.4 - Main Application Controller
  * Coordinates all modules and manages application state
+ * Last updated: 2025-01-05 17:15 EST
  */
 
 class TapestrAI {
