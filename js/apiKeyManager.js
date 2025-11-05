@@ -97,16 +97,16 @@ class APIKeyManager {
         // Available models for different tasks
         models: {
           // Fast & Free (for quick analysis)
-          'fast': 'google/gemini-2.0-flash-exp',
+          'fast': 'google/gemini-flash-1.5',
           'budget': 'deepseek/deepseek-chat',
           
           // Balanced (for main analysis)
-          'balanced': 'anthropic/claude-sonnet-4',
+          'balanced': 'anthropic/claude-3.5-sonnet',
           'general': 'openai/gpt-4-turbo',
           
           // Specialized (for specific tasks)
           'vision': 'anthropic/claude-3-opus',
-          'research': 'perplexity/sonar-pro',
+          'research': 'perplexity/llama-3.1-sonar-large-128k-online',
           'creative': 'anthropic/claude-3-opus',
           'technical': 'deepseek/deepseek-chat'
         }
