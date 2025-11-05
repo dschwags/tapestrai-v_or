@@ -1205,25 +1205,27 @@
         }
 
         function removeAPIKey(provider) {
-            if (!confirm(`Remove ${provider} API key? You can add it again later.`)) {
+            const providerName = window.apiKeyManager?.providers[provider]?.name || provider;
+            
+            if (!confirm(`Remove ${providerName} API key?\n\nYou can add it again later. Your key will be permanently deleted from this browser.`)) {
                 return;
             }
             
             if (window.apiKeyManager) {
-                // Clear from manager
-                window.apiKeyManager.keys[provider] = undefined;
-                localStorage.removeItem(`tapestrAI_key_${provider}`);
-                
-                // Clear input
-                const input = document.getElementById(`${provider}-key-input`);
-                if (input) input.value = '';
-                
-                // Update status
-                updateStatusBadge(provider, 'missing');
-                
-                // Update UI
-                if (window.main && window.main.updateAgentsDisplay) {
-                    window.main.updateAgentsDisplay();
+                try {
+                    // Use the proper removeKey method from apiKeyManager
+                    window.apiKeyManager.removeKey(provider);
+                    
+                    // Update UI
+                    if (window.main && window.main.updateAgentsDisplay) {
+                        window.main.updateAgentsDisplay();
+                    }
+                    
+                    // Show success notification
+                    console.log(`✓ ${providerName} API key removed successfully`);
+                } catch (error) {
+                    console.error('Error removing API key:', error);
+                    alert(`Error removing key: ${error.message}`);
                 }
             }
             
@@ -1334,10 +1336,11 @@
             const keys = window.apiKeyManager.keys;
             const providers = [
                 { id: 'gemini', activeShape: '❶', inactiveShape: '➀', letter: 'G', name: 'Gemini', color: '#4285F4' },
-                { id: 'openai', activeShape: '❷', inactiveShape: '➁', letter: 'O', name: 'OpenAI', color: '#10A37F' },
-                { id: 'anthropic', activeShape: '❸', inactiveShape: '➂', letter: 'C', name: 'Claude', color: '#D97757' },
-                { id: 'perplexity', activeShape: '❹', inactiveShape: '➃', letter: 'P', name: 'Perplexity', color: '#1FB6FF' },
-                { id: 'deepseek', activeShape: '❺', inactiveShape: '➄', letter: 'D', name: 'DeepSeek', color: '#FFD700' }
+                { id: 'openrouter', activeShape: '❷', inactiveShape: '➁', letter: 'R', name: 'OpenRouter', color: '#10B981' },
+                { id: 'openai', activeShape: '❸', inactiveShape: '➂', letter: 'O', name: 'OpenAI', color: '#10A37F' },
+                { id: 'anthropic', activeShape: '❹', inactiveShape: '➃', letter: 'C', name: 'Claude', color: '#D97757' },
+                { id: 'perplexity', activeShape: '❺', inactiveShape: '➄', letter: 'P', name: 'Perplexity', color: '#1FB6FF' },
+                { id: 'deepseek', activeShape: '❻', inactiveShape: '➅', letter: 'D', name: 'DeepSeek', color: '#FFD700' }
             ];
             
             quickStatus.innerHTML = providers.map(p => {
@@ -1401,7 +1404,7 @@
             // Update count
             const countEl = document.getElementById('keys-configured-count');
             if (countEl) {
-                countEl.textContent = `${configuredCount}/5`;
+                countEl.textContent = `${configuredCount}/6`;
             }
             
             // Update analysis level

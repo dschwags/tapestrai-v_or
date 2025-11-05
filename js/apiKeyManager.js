@@ -406,6 +406,13 @@ class APIKeyManager {
       console.error(`API test failed for ${provider}:`, errorData);
       console.error(`Response status: ${response.status}, statusText: ${response.statusText}`);
       
+      // Log detailed error for OpenRouter
+      if (provider === 'openrouter' && errorData.error) {
+        console.error('OpenRouter error details:', errorData.error);
+        console.error('OpenRouter error message:', errorData.error.message || 'No message');
+        console.error('OpenRouter error code:', errorData.error.code || 'No code');
+      }
+      
       // Show more specific error message
       if (response.status === 401) {
         this.showNotification('error', 'Invalid API key - check your key and try again');
