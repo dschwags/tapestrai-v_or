@@ -97,17 +97,17 @@ class APIKeyManager {
         // Available models for different tasks
         models: {
           // Fast & Free (for quick analysis)
-          'fast': 'google/gemini-2.5-flash-lite',  // FIXED: was gemini-flash-1.5
+          'fast': 'google/gemini-flash-1.5',
           'budget': 'deepseek/deepseek-chat',
           
           // Balanced (for main analysis)
-          'balanced': 'anthropic/claude-sonnet-4',  // Updated to latest
-          'general': 'openai/gpt-4o',  // Updated to GPT-4o
+          'balanced': 'anthropic/claude-3.5-sonnet',
+          'general': 'openai/gpt-4-turbo',
           
           // Specialized (for specific tasks)
-          'vision': 'anthropic/claude-sonnet-4',  // Sonnet 4 has better vision
+          'vision': 'anthropic/claude-3-opus',
           'research': 'perplexity/llama-3.1-sonar-large-128k-online',
-          'creative': 'anthropic/claude-opus-4',  // Updated to Opus 4
+          'creative': 'anthropic/claude-3-opus',
           'technical': 'deepseek/deepseek-chat'
         }
       }
@@ -811,28 +811,12 @@ class APIKeyManager {
     if (!usage) return 0;
     
     // Approximate costs (OpenRouter charges same as providers)
-    // Pricing as of Nov 2025
     const costs = {
-      // Google models
-      'google/gemini-2.5-flash-lite': { input: 0.0001, output: 0.0004 },  // ADDED
-      'google/gemini-2.5-flash': { input: 0.0003, output: 0.0025 },
       'google/gemini-2.0-flash-exp': { input: 0.00002, output: 0.00006 },
-      
-      // DeepSeek
       'deepseek/deepseek-chat': { input: 0.00014, output: 0.00028 },
-      
-      // Anthropic
-      'anthropic/claude-sonnet-4': { input: 0.003, output: 0.015 },  // UPDATED
-      'anthropic/claude-opus-4': { input: 0.015, output: 0.075 },  // UPDATED
-      'anthropic/claude-3.5-sonnet': { input: 0.003, output: 0.015 },
+      'anthropic/claude-sonnet-4': { input: 0.003, output: 0.015 },
       'anthropic/claude-3-opus': { input: 0.015, output: 0.075 },
-      
-      // OpenAI
-      'openai/gpt-4o': { input: 0.0025, output: 0.01 },  // ADDED
       'openai/gpt-4-turbo': { input: 0.01, output: 0.03 },
-      
-      // Perplexity
-      'perplexity/llama-3.1-sonar-large-128k-online': { input: 0.001, output: 0.001 },
       'perplexity/sonar-pro': { input: 0.001, output: 0.001 }
     };
     
